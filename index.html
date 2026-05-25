@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Mard 拼豆管理</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#0F0E0C;--ink2:#5C5850;--ink3:#A8A39A;
+  --bg:#F5F2EC;--surface:#FFFFFF;--surface2:#EFECE6;
+  --border:#E0DBD1;--border2:#D0CAC0;
+  --green:#1A6B3C;--green-bg:#E6F4ED;
+  --amber:#8B5E00;--amber-bg:#FDF3DC;
+  --red:#9B2020;--red-bg:#FAEAEA;
+  --accent:#C44B1E;
+  --r:12px;--rs:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --ink:#F0EDE6;--ink2:#A8A39A;--ink3:#6B665E;
+    --bg:#141310;--surface:#1E1C19;--surface2:#252320;
+    --border:#2E2B26;--border2:#3A3730;
+    --green:#4CAF7A;--green-bg:#0D2418;
+    --amber:#D4A017;--amber-bg:#1E1600;
+    --red:#E05555;--red-bg:#200F0F;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.6}
+input,select,button,textarea{font-family:'Noto Sans SC',sans-serif}
+
+/* layout */
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+@media(max-width:680px){.shell{grid-template-columns:1fr}}
+
+/* sidebar */
+.sidebar{background:var(--ink);color:var(--bg);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+@media(max-width:680px){.sidebar{height:auto;position:static}}
+.brand{padding:28px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.brand-logo{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.brand-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.brand-name{font-size:16px;font-weight:700;letter-spacing:-0.3px;color:#fff}
+.brand-sub{font-size:10px;color:rgba(255,255,255,0.35);font-family:'DM Mono',monospace;letter-spacing:1.5px;margin-left:20px}
+.nav{padding:14px 10px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rs);cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5);transition:all 0.15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item svg{width:15px;height:15px;flex-shrink:0}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.85)}
+.nav-item.active{background:rgba(255,255,255,0.12);color:#fff}
+.sidebar-stats{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08)}
+.ss-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.ss-label{font-size:10px;color:rgba(255,255,255,0.3);font-family:'DM Mono',monospace}
+.ss-val{font-size:13px;font-weight:600;color:rgba(255,255,255,0.85);font-family:'DM Mono',monospace}
+@media(max-width:680px){
+  .nav{display:flex;flex-wrap:wrap;gap:4px;padding:10px 8px}
+  .nav-item{flex:0 0 auto;padding:7px 12px;font-size:12px}
+  .sidebar-stats{display:none}
+}
+
+/* main */
+.main{overflow-y:auto}
+.page{display:none;padding:32px 28px}
+.page.active{display:block}
+@media(max-width:680px){.page{padding:20px 16px}}
+.page-hd{margin-bottom:24px}
+.page-title{font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--ink)}
+.page-sub{font-size:12px;color:var(--ink3);margin-top:3px}
+
+/* stat cards */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+.sn{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;line-height:1;color:var(--ink)}
+.sn.g{color:var(--green)}.sn.a{color:var(--amber)}.sn.r{color:var(--accent)}
+.sl{font-size:10px;color:var(--ink3);margin-top:5px;letter-spacing:0.3px}
+
+/* form card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:16px}
+.card-title{font-size:12px;font-weight:600;color:var(--ink2);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10px;font-weight:600;color:var(--ink3);letter-spacing:0.8px;text-transform:uppercase}
+.field input,.field select{
+  width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:var(--rs);
+  font-size:13px;background:var(--bg);color:var(--ink);outline:none;
+  transition:border-color 0.15s,background 0.15s
+}
+.field input:focus,.field select:focus{border-color:var(--accent);background:var(--surface)}
+.field input::placeholder{color:var(--ink3)}
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:calc(100%+4px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rs);z-index:100;max-height:190px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,0.1)}
+.ac-item{display:flex;align-items:center;gap:9px;padding:7px 11px;cursor:pointer;font-size:13px;color:var(--ink);transition:background 0.1s}
+.ac-item:hover{background:var(--surface2)}
+.ac-dot{width:15px;height:15px;border-radius:50%;border:1px solid rgba(0,0,0,0.12);flex-shrink:0}
+.ac-code{font-family:'DM Mono',monospace;font-weight:500;font-size:12px}
+.ac-hex{font-size:10px;color:var(--ink3);font-family:'DM Mono',monospace}
+
+/* buttons */
+.btn{padding:8px 18px;border-radius:var(--rs);border:1px solid transparent;cursor:pointer;font-size:13px;font-family:'Noto Sans SC',sans-serif;font-weight:600;transition:all 0.15s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{filter:brightness(0.9)}
+.btn-ghost{background:transparent;color:var(--ink2);border-color:var(--border)}
+.btn-ghost:hover{background:var(--surface2)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+
+/* table */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.tbl-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border)}
+.tbl-controls input,.tbl-controls select{height:32px;font-size:12px;padding:0 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none;font-family:'Noto Sans SC',sans-serif}
+.tbl-controls input{min-width:160px;flex:1}
+.tbl-controls input:focus,.tbl-controls select:focus{border-color:var(--accent)}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:10px 14px;font-size:10px;font-weight:600;color:var(--ink3);text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;letter-spacing:0.5px;text-transform:uppercase;background:var(--surface)}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.mono{font-family:'DM Mono',monospace;font-size:12px}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;cursor:pointer;white-space:nowrap}
+.badge-g{background:var(--green-bg);color:var(--green)}
+.badge-a{background:var(--amber-bg);color:var(--amber)}
+.dot6{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* color dot */
+.cdot{width:13px;height:13px;border-radius:50%;border:1px solid rgba(0,0,0,0.1);display:inline-block;vertical-align:middle;margin-right:5px;flex-shrink:0}
+
+/* inventory grid */
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:7px;margin-top:4px}
+.inv-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:8px 10px;transition:border-color 0.15s}
+.inv-card.has{border-color:var(--green);background:var(--green-bg)}
+.inv-card.low{border-color:var(--amber)!important;background:var(--amber-bg)!important}
+.inv-card.pending{border-color:#A0620A;border-style:dashed}
+.inv-card.wish{border-color:#7C3AED;border-style:dashed}
+.inv-cdot{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(0,0,0,0.1);margin-bottom:5px}
+.inv-code{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;color:var(--ink2)}
+.inv-beads{font-size:17px;font-weight:700;font-family:'DM Mono',monospace;color:var(--ink);line-height:1.2}
+.inv-unit{font-size:9px;color:var(--ink3);margin-top:1px}
+.inv-src{font-size:9px;color:var(--ink3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.inv-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.inv-controls input,.inv-controls select{height:32px;font-size:12px;padding:0 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface);color:var(--ink);outline:none;font-family:'Noto Sans SC',sans-serif}
+.inv-controls input{min-width:150px;flex:1}
+
+/* seller cards */
+.seller-list{display:flex;flex-direction:column;gap:8px}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 17px;display:flex;align-items:center;gap:12px}
+.sc-av{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.sc-name{font-weight:600;font-size:13px}
+.sc-meta{font-size:11px;color:var(--ink3);margin-top:1px}
+.sc-cnt{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink3);margin-left:auto}
+.pill{display:inline-block;font-size:9px;font-weight:600;padding:2px 7px;border-radius:20px;background:var(--surface2);color:var(--ink2);letter-spacing:0.3px}
+.pill-amber{background:var(--amber-bg);color:var(--amber)}
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--ink3);padding:5px;border-radius:6px;display:flex;align-items:center;transition:all 0.15s}
+.icon-btn:hover{background:var(--red-bg);color:var(--red)}
+.empty{padding:40px;text-align:center;color:var(--ink3);font-size:13px}
+.drop-over{border-color:var(--accent)!important;background:var(--surface2)}
+.sep{height:1px;background:var(--border);margin:20px 0}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-logo">
+      <div class="brand-dot"></div>
+      <div class="brand-name">Mard 拼豆</div>
+    </div>
+    <div class="brand-sub">291 色号</div>
+  </div>
+  <nav class="nav">
+    <button class="nav-item active" onclick="showPage('add',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>新增进货
+    </button>
+    <button class="nav-item" onclick="showPage('orders',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>进货记录
+    </button>
+    <button class="nav-item" onclick="showPage('inventory',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>库存总览
+    </button>
+    <button class="nav-item" onclick="showPage('sellers',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>卖家管理
+    </button>
+    <button class="nav-item" onclick="showPage('usage',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>分装记录
+    </button>
+    <button class="nav-item" onclick="showPage('wishlist',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>补货愿望单
+    </button>
+    <button class="nav-item" onclick="showPage('cloud',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>云端同步
+    </button>
+    <button class="nav-item" onclick="showPage('sync',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><polyline points="23,20 23,14 17,14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>备份与恢复
+    </button>
+  </nav>
+  <div id="syncDot" style="padding:8px 20px;font-size:11px;color:rgba(255,255,255,0.3);font-family:'DM Mono',monospace">● 本地</div>
+  <div class="sidebar-stats" id="sideStats"></div>
+</aside>
+
+<main class="main">
+
+  <!-- ADD ORDER -->
+  <div id="page-add" class="page active">
+    <div class="page-hd">
+      <div class="page-title">新增进货</div>
+      <div class="page-sub">输入色号按 Enter 逐条录入 · 数量/单价/单位可随时修改 · 色号不重复</div>
+    </div>
+    <div class="stat-row" id="statsRow"></div>
+
+    <div class="card">
+      <!-- 固定项：卖家、状态、日期、备注 -->
+      <div class="card-title">进货设置（共用）</div>
+      <div class="form-grid" style="margin-bottom:16px">
+        <div class="field"><label>卖家</label><select id="f-seller"></select></div>
+        <div class="field">
+          <label>状态</label>
+          <select id="f-status">
+            <option value="pending">待到货</option>
+            <option value="arrived">已到货</option>
+          </select>
+        </div>
+        <div class="field"><label>日期</label><input type="date" id="f-date"/></div>
+        <div class="field"><label>备注</label><input type="text" id="f-note" placeholder="可选"/></div>
+      </div>
+
+      <!-- 录入行 -->
+      <div style="border-top:1px solid var(--border);padding-top:14px">
+        <div style="font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:10px">
+          输入色号 · 每行可单独调整数量/单位/单价
+        </div>
+        <!-- 行表头 -->
+        <div style="display:grid;grid-template-columns:1fr 90px 90px 100px 36px;gap:8px;align-items:center;margin-bottom:6px;padding:0 2px">
+          <div style="font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:0.5px">色号</div>
+          <div style="font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:0.5px">数量</div>
+          <div style="font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:0.5px">单位</div>
+          <div style="font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:0.5px">单价 (¥)</div>
+          <div></div>
+        </div>
+        <!-- 输入行容器 -->
+        <div id="rowList"></div>
+        <!-- 提示 -->
+        <div id="addRowHint" style="font-size:12px;color:var(--ink3);padding:6px 2px">在色号框输入后按 Enter 自动新增下一行</div>
+      </div>
+
+      <div class="btn-row" style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+        <button class="btn btn-primary" onclick="commitBatch()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+          全部保存 <span id="commitCount" style="opacity:0.7"></span>
+        </button>
+        <button class="btn btn-ghost" onclick="exportCSV()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>导出 CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDERS -->
+  <div id="page-orders" class="page">
+    <div class="page-hd">
+      <div class="page-title">进货记录</div>
+      <div class="page-sub">点击状态标签可切换到货 / 待到货</div>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-controls">
+        <input type="text" id="filterQ" placeholder="搜索色号 / 卖家…" oninput="renderOrders()"/>
+        <select id="filterS" onchange="renderOrders()">
+          <option value="">全部</option><option value="arrived">已到货</option><option value="pending">待到货</option>
+        </select>
+      </div>
+      <div class="tbl-scroll">
+        <table>
+          <colgroup>
+            <col style="width:80px"><col style="width:130px"><col style="width:80px">
+            <col style="width:90px"><col style="width:90px"><col style="width:90px">
+            <col style="width:80px"><col style="width:86px"><col style="width:120px"><col style="width:40px">
+          </colgroup>
+          <thead><tr>
+            <th>色号</th><th>卖家</th><th>平台</th>
+            <th>颗数</th><th>克数</th><th>单价 (¥)</th><th>马币 (RM)</th>
+            <th>状态</th><th>日期</th><th>备注</th><th></th>
+          </tr></thead>
+          <tbody id="ordersTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div id="page-inventory" class="page">
+    <div class="page-hd">
+      <div class="page-title">库存总览</div>
+      <div class="page-sub">仅统计已到货 · 1包=1000颗（星芒=1200颗）</div>
+    </div>
+
+    <!-- 低库存提醒横幅 -->
+    <div id="lowStockBanner" style="display:none;background:var(--amber-bg);border:1px solid #e8c87a;border-radius:var(--r);padding:12px 16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <span style="font-size:13px;font-weight:600;color:var(--amber)">! 低库存提醒</span>
+          <span id="lowStockCount" style="font-size:12px;color:var(--amber);margin-left:6px"></span>
+        </div>
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px;height:auto" onclick="copyRestockList()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          复制补货清单
+        </button>
+      </div>
+      <div id="lowStockList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div>
+    </div>
+
+    <div class="inv-controls">
+      <input type="text" id="invQ" placeholder="搜索色号…" oninput="renderInventory()"/>
+      <select id="invF" onchange="renderInventory()">
+        <option value="all">全部 291 色</option>
+        <option value="has" selected>有库存</option>
+        <option value="low">低库存</option>
+        <option value="zero">库存为零</option>
+      </select>
+      <select id="invSort" onchange="renderInventory()">
+        <option value="desc">最多 → 最少</option>
+        <option value="asc">最少 → 最多</option>
+        <option value="code">按色号</option>
+      </select>
+    </div>
+
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span>汇率：¥1 =</span>
+      <input type="number" id="rateInput" step="0.001" min="0.1" max="2" style="width:80px;height:28px;font-size:12px;padding:0 8px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none" onchange="saveRate()"/>
+      <span>RM（<a href="#" style="color:var(--accent);text-decoration:none" onclick="window.open('https://www.google.com/search?q=1+CNY+to+MYR','_blank')">查实时汇率</a>）</span>
+      <span style="margin-left:8px">警戒线：</span>
+      <input type="number" id="lowThreshold" value="1000" min="0" step="100"
+        style="width:80px;height:28px;font-size:12px;padding:0 8px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none"
+        onchange="saveLowThreshold();renderInventory()" placeholder="颗"/>
+      <span>颗以下标红</span>
+    </div>
+    <div class="inv-grid" id="invGrid"></div>
+  </div>
+
+  <!-- SELLERS -->
+  <div id="page-sellers" class="page">
+    <div class="page-hd">
+      <div class="page-title">卖家管理</div>
+      <div class="page-sub">星芒 = 1200颗/包，其他 = 1000颗/包</div>
+    </div>
+    <div class="card">
+      <div class="card-title">新增卖家</div>
+      <div class="form-grid">
+        <div class="field"><label>卖家名称</label><input type="text" id="s-name" placeholder="如：拼多多星芒"/></div>
+        <div class="field"><label>平台</label>
+          <select id="s-platform">
+            <option>拼多多</option><option>小红书</option><option>淘宝</option>
+            <option>抖音</option><option>线下</option><option>其他</option>
+          </select>
+        </div>
+        <div class="field"><label>每包颗数</label>
+          <select id="s-bpp">
+            <option value="1000">1000颗（标准）</option>
+            <option value="1200">1200颗（星芒）</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="addSeller()">添加卖家</button></div>
+    </div>
+    <div class="seller-list" id="sellerList"></div>
+  </div>
+
+
+
+  <!-- USAGE -->
+  <div id="page-usage" class="page">
+    <div class="page-hd">
+      <div class="page-title">分装记录</div>
+      <div class="page-sub">记录分装进小药瓶的豆，库存总览自动扣除剩余</div>
+    </div>
+
+    <!-- 统计 -->
+    <div class="stat-row" id="usageStatsRow"></div>
+
+    <!-- 新增用出 -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">新增用出</div>
+      <div class="form-grid" style="margin-bottom:14px">
+        <div class="field" style="max-width:200px"><label>日期</label><input type="date" id="u-date"/></div>
+      </div>
+      <!-- 行表头 -->
+      <div style="border-top:1px solid var(--border);padding-top:14px">
+        <div style="font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px">
+          输入色号 · 填分装颗数 · 按 Enter 跳下一行
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 120px 36px;gap:8px;align-items:center;margin-bottom:6px;padding:0 2px">
+          <div style="font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:0.5px">色号</div>
+          <div style="font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:0.5px">用出颗数</div>
+          <div></div>
+        </div>
+        <div id="uRowList"></div>
+        <div style="font-size:12px;color:var(--ink3);padding:4px 2px">输入色号按 Enter 自动新增下一行</div>
+      </div>
+      <div class="btn-row" style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+        <button class="btn btn-primary" onclick="commitUsage()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+          保存用出 <span id="uCommitCount" style="opacity:0.7"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="tbl-wrap">
+      <div class="tbl-controls">
+        <input type="text" id="uFilterQ" placeholder="搜索色号…" oninput="renderUsageList()" style="min-width:160px"/>
+      </div>
+      <div class="tbl-scroll">
+        <table>
+          <colgroup>
+            <col style="width:80px"><col style="width:110px"><col style="width:110px">
+            <col style="width:100px"><col style="width:40px">
+          </colgroup>
+          <thead><tr>
+            <th>色号</th><th>用出颗数</th><th>用出克数</th><th>日期</th><th>备注</th><th></th>
+          </tr></thead>
+          <tbody id="usageTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- WISHLIST -->
+  <div id="page-wishlist" class="page">
+    <div class="page-hd">
+      <div class="page-title">补货愿望单</div>
+      <div class="page-sub">记录想买但还没下单的色号，下单后移到「新增进货」</div>
+    </div>
+
+    <div class="stat-row" id="wishStatsRow"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">添加色号</div>
+      <div style="display:grid;grid-template-columns:1fr 100px 90px 1fr 36px;gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <div class="field ac-wrap">
+          <label>色号</label>
+          <input type="text" id="w-code" placeholder="如 F2、H7…" autocomplete="off"
+            oninput="onWishAc()" onblur="setTimeout(closeWishAc,160)"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('w-amount').focus()}"/>
+          <div class="ac-drop" id="wishAcDrop" style="display:none"></div>
+        </div>
+        <div class="field">
+          <label>数量</label>
+          <input type="number" id="w-amount" min="0" step="0.1" placeholder="如 2"
+            style="height:36px;font-size:13px;padding:0 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none;width:100%"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();addWish()}"/>
+        </div>
+        <div class="field">
+          <label>单位</label>
+          <select id="w-unit" style="height:36px;font-size:13px;padding:0 8px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none;width:100%">
+            <option value="包">包</option>
+            <option value="克">克 (g)</option>
+            <option value="颗">颗</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>备注</label>
+          <input type="text" id="w-note" placeholder="可选，如：颜色不够用"
+            style="height:36px;font-size:13px;padding:0 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none;width:100%"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();addWish()}"/>
+        </div>
+        <button class="btn btn-primary" onclick="addWish()" style="height:36px;padding:0 14px;align-self:flex-end">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Wishlist items -->
+    <div id="wishList"></div>
+  </div>
+
+  <!-- CLOUD -->
+  <div id="page-cloud" class="page">
+    <div class="page-hd">
+      <div class="page-title">云端同步</div>
+      <div class="page-sub">用 JSONBin 免费储存，手机电脑同一份数据</div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">第一步：获取免费 API Key</div>
+      <div style="font-size:13px;color:var(--ink2);line-height:2.2;margin-bottom:12px">
+        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:4px">
+          <div style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">1</div>
+          <div>打开 <a href="https://jsonbin.io" target="_blank" style="color:var(--accent);font-weight:500">jsonbin.io</a> → 点右上角 <strong>Sign Up</strong>（用 Google 账号一秒注册）</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:4px">
+          <div style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">2</div>
+          <div>登入后点右上角头像 → <strong>API Keys</strong> → 复制 <strong>Access Key</strong>（以 <code style="background:var(--surface2);padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px">$2a$</code> 开头）</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">3</div>
+          <div>把 Secret Key 填入下方，点「初始化云端」，完成！</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">第二步：填入 API Key</div>
+      <div class="form-grid" style="margin-bottom:14px">
+        <div class="field" style="grid-column:1/-1">
+          <label>JSONBin Master Key</label>
+          <input type="password" id="jbKey" placeholder="$2b$10$…" oninput="saveJbKey()"
+            style="font-family:'DM Mono',monospace;font-size:12px"/>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Bin ID（初始化后自动填入）</label>
+          <input type="text" id="jbBin" placeholder="填入 Bin ID，如 6a0ff737ee5a733b12fdc8ac"
+            style="font-family:'DM Mono',monospace;font-size:12px" oninput="saveJbBin()"/>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="cloudInit()" id="initBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+          初始化云端（首次使用）
+        </button>
+        <button class="btn btn-ghost" onclick="cloudPush()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16,17 21,12 16,7"/><path d="M21 12H9"/></svg>
+          推送到云端
+        </button>
+        <button class="btn btn-ghost" onclick="cloudPull()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8,17 3,12 8,7"/><path d="M3 12h18"/></svg>
+          从云端拉取
+        </button>
+      </div>
+      <div id="cloudMsg" style="margin-top:12px;font-size:13px;display:none"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">使用方式</div>
+      <div style="font-size:13px;color:var(--ink2);line-height:2">
+        <div>• <strong>打开网站时自动从云端拉取</strong>，无需手动操作</div>
+        <div>• 每次新增进货或分装后<strong>自动推送到云端</strong></div>
+        <div>• 左下角状态：<span style="color:#4CAF7A">● 已同步</span> = 正常，<span style="color:#E05555">● 同步失败</span> = 检查网络或 Key</div>
+        <div>• 第一次换新设备：填同一个 API Key 和 Bin ID → 会自动拉取</div>
+        <div>• <strong>Bin ID 要记下来</strong>，新设备需要填这个 ID</div>
+        <div style="margin-top:8px;padding:10px 12px;background:var(--amber-bg);border-radius:var(--rs);color:var(--amber);font-size:12px">
+          ! 免费版每月 10,000 次请求，日常使用完全足够
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYNC -->
+  <div id="page-sync" class="page">
+    <div class="page-hd">
+      <div class="page-title">备份与恢复</div>
+      <div class="page-sub">电脑导出 → 发到手机 → 手机导入，数据同步</div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">导出备份</div>
+      <p style="font-size:13px;color:var(--ink2);margin-bottom:16px;line-height:1.8">
+        将所有进货记录和卖家资料打包成一个 <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:12px">.json</code> 备份文件，下载后发到手机（WhatsApp / 邮件均可），再在手机上导入。
+      </p>
+      <div id="exportInfo" style="font-size:12px;color:var(--ink3);margin-bottom:14px"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="exportBackup()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          导出备份文件
+        </button>
+        <button class="btn btn-ghost" onclick="exportCSV()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          导出 CSV 表格
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">导入备份</div>
+      <p style="font-size:13px;color:var(--ink2);margin-bottom:16px;line-height:1.8">
+        上传之前导出的 <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:12px">.json</code> 备份文件，将覆盖当前所有数据。
+      </p>
+
+      <!-- 方法一：上传文件 -->
+      <div style="font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px">方法一：上传文件</div>
+      <div style="border:2px dashed var(--border);border-radius:var(--r);padding:28px 20px;text-align:center;position:relative;cursor:pointer;transition:border-color 0.2s" id="dropZone">
+        <input type="file" accept=".json" id="importFile" onchange="importBackup(this.files[0])" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%"/>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--ink3)" stroke-width="1.5" style="margin:0 auto 10px;display:block"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div style="font-size:14px;font-weight:500;color:var(--ink)">点击或拖拽备份文件到这里</div>
+        <div style="font-size:12px;color:var(--ink3);margin-top:4px">仅支持 .json 备份文件</div>
+      </div>
+
+      <!-- 方法二：粘贴文字 -->
+      <div style="font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:0.8px;text-transform:uppercase;margin:18px 0 8px">方法二：粘贴 JSON 文字（手机推荐）</div>
+      <p style="font-size:12px;color:var(--ink3);margin-bottom:10px;line-height:1.7">
+        用手机打开 .json 文件 → 全选文字 → 复制 → 粘贴到下方框框 → 点「从文字导入」
+      </p>
+      <textarea id="pasteJson" rows="5" placeholder='把备份文件里的全部文字粘贴到这里…&#10;（以 { "version": 1 开头）'
+        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--rs);font-size:12px;font-family:'DM Mono',monospace;background:var(--bg);color:var(--ink);outline:none;resize:vertical;line-height:1.5"></textarea>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn btn-primary" onclick="importFromText()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>从文字导入
+        </button>
+        <button class="btn btn-ghost" onclick="document.getElementById('pasteJson').value=''">清除</button>
+      </div>
+
+      <div id="importMsg" style="margin-top:12px;font-size:13px;display:none"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">使用步骤</div>
+      <div style="font-size:13px;color:var(--ink2);line-height:2.2">
+        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:6px">
+          <div style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0">1</div>
+          <div>电脑上打开 HTML，更新好进货记录</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:6px">
+          <div style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0">2</div>
+          <div>点「导出备份文件」，下载 <code style="background:var(--surface2);padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px">.json</code> 文件</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:6px">
+          <div style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0">3</div>
+          <div>把 <code style="background:var(--surface2);padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px">.json</code> 文件发到手机（WhatsApp 给自己 / 邮件）</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0">4</div>
+          <div>手机上打开 HTML，到「备份与恢复」→「导入备份文件」，数据立刻同步</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+const COLORS=[["A1","#FAF4C8"],["A2","#FFFFD5"],["A3","#FEFF8B"],["A4","#FBED56"],["A5","#F4D738"],["A6","#FEAC4C"],["A7","#FE8B4C"],["A8","#FFDA45"],["A9","#FF995B"],["A10","#F77C31"],["A11","#FFDD99"],["A12","#FE9F72"],["A13","#FFC365"],["A14","#FD543D"],["A15","#FFF365"],["A16","#FFFF9F"],["A17","#FFE36E"],["A18","#FEBE7D"],["A19","#FD7C72"],["A20","#FFD568"],["A21","#FFE395"],["A22","#F4F57D"],["A23","#E6C9B7"],["A24","#F7F8A2"],["A25","#FFD67D"],["A26","#FFC830"],["B1","#E6EE31"],["B2","#63F347"],["B3","#9EF780"],["B4","#5DE035"],["B5","#35E352"],["B6","#65E2A6"],["B7","#3DAF80"],["B8","#1C9C4F"],["B9","#27523A"],["B10","#95D3C2"],["B11","#5D722A"],["B12","#166F41"],["B13","#CAEB7B"],["B14","#ADE946"],["B15","#2E5132"],["B16","#C5ED9C"],["B17","#9BB13A"],["B18","#E6EE49"],["B19","#24B88C"],["B20","#C2F0CC"],["B21","#156A6B"],["B22","#0B3C43"],["B23","#303A21"],["B24","#EEFCA5"],["B25","#4E846D"],["B26","#8D7A35"],["B27","#CCE1AF"],["B28","#9EE5B9"],["B29","#C5E254"],["B30","#E2FCB1"],["B31","#B0E792"],["B32","#9CAB5A"],["C1","#E8FFE7"],["C2","#A9F9FC"],["C3","#A0E2FB"],["C4","#41CCFF"],["C5","#01ACEB"],["C6","#50AAF0"],["C7","#3677D2"],["C8","#0F54C0"],["C9","#324BCA"],["C10","#3EBCE2"],["C11","#28DDDE"],["C12","#1C334D"],["C13","#CDE8FF"],["C14","#D5FDFF"],["C15","#22C4C6"],["C16","#1557A8"],["C17","#04D1F6"],["C18","#1D3344"],["C19","#1887A2"],["C20","#176DAF"],["C21","#BEDDFF"],["C22","#67B4BE"],["C23","#C8E2FF"],["C24","#7CC4FF"],["C25","#A9E5E5"],["C26","#3CAED8"],["C27","#D3DFFA"],["C28","#BBCFED"],["C29","#34488E"],["D1","#AEB4F2"],["D2","#858EDD"],["D3","#2F54AF"],["D4","#182A84"],["D5","#B843C5"],["D6","#AC7BDE"],["D7","#8854B3"],["D8","#E2D3FF"],["D9","#D5B9F8"],["D10","#361851"],["D11","#B9BAE1"],["D12","#DE9AD4"],["D13","#B90095"],["D14","#8B279B"],["D15","#2F1F90"],["D16","#E3E1EE"],["D17","#C4D4F6"],["D18","#A45EC7"],["D19","#D8C3D7"],["D20","#9C32B2"],["D21","#9A009B"],["D22","#333A95"],["D23","#EBDAFC"],["D24","#7786E5"],["D25","#494FC7"],["D26","#DFC2F8"],["E1","#FDD3CC"],["E2","#FEC0DF"],["E3","#FFB7E7"],["E4","#E8649E"],["E5","#F551A2"],["E6","#F13D74"],["E7","#C63478"],["E8","#FFDBE9"],["E9","#E970CC"],["E10","#D33793"],["E11","#FCDDD2"],["E12","#F78FC3"],["E13","#B5006D"],["E14","#FFD1BA"],["E15","#F8C7C9"],["E16","#FFF3EB"],["E17","#FFE2EA"],["E18","#FFC7DB"],["E19","#FEBAD5"],["E20","#D8C7D1"],["E21","#BD9DA1"],["E22","#B785A1"],["E23","#937A8D"],["E24","#E1BCE8"],["F1","#FD957B"],["F2","#FC3D46"],["F3","#F74941"],["F4","#FC283C"],["F5","#E7002F"],["F6","#943630"],["F7","#971937"],["F8","#BC0028"],["F9","#E2677A"],["F10","#8A4526"],["F11","#5A2121"],["F12","#FD4E6A"],["F13","#F35744"],["F14","#FFA9AD"],["F15","#D30022"],["F16","#FEC2A6"],["F17","#E69C79"],["F18","#D37C46"],["F19","#C1444A"],["F20","#CD9391"],["F21","#F7B4C6"],["F22","#FDC0D0"],["F23","#F67E66"],["F24","#E698AA"],["F25","#E54B4F"],["G1","#FFE2CE"],["G2","#FFC4AA"],["G3","#F4C3A5"],["G4","#E1B383"],["G5","#EDB045"],["G6","#E99C17"],["G7","#9D5B3E"],["G8","#753832"],["G9","#E6B483"],["G10","#D98C39"],["G11","#E0C593"],["G12","#FFC890"],["G13","#B7714A"],["G14","#8D614C"],["G15","#FCF9E0"],["G16","#F2D9BA"],["G17","#78524B"],["G18","#FFE4CC"],["G19","#E07935"],["G20","#A94023"],["G21","#B88558"],["H1","#FDFBFF"],["H2","#FEFFFF"],["H3","#B6B1BA"],["H4","#89858C"],["H5","#48464E"],["H6","#2F2B2F"],["H7","#000000"],["H8","#E7D6DB"],["H9","#EDEDED"],["H10","#EEE9EA"],["H11","#CECDD5"],["H12","#FFF5ED"],["H13","#F5ECD2"],["H14","#CFD7D3"],["H15","#98A6A8"],["H16","#1D1414"],["H17","#F1EDED"],["H18","#FFFDF0"],["H19","#F6EFE2"],["H20","#949FA3"],["H21","#FFFBE1"],["H22","#CACAD4"],["H23","#9A9D94"],["M1","#BCC6B8"],["M2","#8AA386"],["M3","#697D80"],["M4","#E3D2BC"],["M5","#D0CCAA"],["M6","#B0A782"],["M7","#B4A497"],["M8","#B38281"],["M9","#A58767"],["M10","#C5B2BC"],["M11","#9F7594"],["M12","#644749"],["M13","#D19066"],["M14","#C77362"],["M15","#757D78"],["P1","#FCF7F8"],["P2","#B0A9AC"],["P3","#AFDCAB"],["P4","#FEA49F"],["P5","#EE8C3E"],["P6","#5FD0A7"],["P7","#EB9270"],["P8","#F0D958"],["P9","#D9D9D9"],["P10","#D9C7EA"],["P11","#F3ECC9"],["P12","#E6EEF2"],["P13","#AACBEF"],["P14","#337680"],["P15","#668575"],["P16","#FEBF45"],["P17","#FEA324"],["P18","#FEB89F"],["P19","#FFFEEC"],["P20","#FEBECF"],["P21","#ECBEBF"],["P22","#E4A89F"],["P23","#A56268"],["Q1","#F2A5E8"],["Q2","#E9EC91"],["Q3","#FFFF00"],["Q4","#FFEBFA"],["Q5","#76CEDE"],["R1","#D50D21"],["R2","#F92F83"],["R3","#FD8324"],["R4","#F8EC31"],["R5","#35C75B"],["R6","#238891"],["R7","#19779D"],["R8","#1A60C3"],["R9","#9A56B4"],["R10","#FFDB4C"],["R11","#FFEBFA"],["R12","#D8D5CE"],["R13","#55514C"],["R14","#9FE4DF"],["R15","#77CEE9"],["R16","#3ECFCA"],["R17","#4A867A"],["R18","#7FCD9D"],["R19","#CDE55D"],["R20","#E8C7B4"],["R21","#AD6F3C"],["R22","#6C372F"],["R23","#FEB872"],["R24","#F3C1C0"],["R25","#C9675E"],["R26","#D293BE"],["R27","#EA8CB1"],["R28","#9C87D6"],["T1","#FFFFFF"],["Y1","#FD6FB4"],["Y2","#FEB481"],["Y3","#D7FAA0"],["Y4","#8BDBFA"],["Y5","#E987EA"],["ZG1","#DAABB3"],["ZG2","#D6AA87"],["ZG3","#C1BD8D"],["ZG4","#96869F"],["ZG5","#8490A6"],["ZG6","#94BFE2"],["ZG7","#E2A9D2"],["ZG8","#AB91C0"]];
+const CM=Object.fromEntries(COLORS);
+const VALID=new Set(COLORS.map(([c])=>c));
+
+const SKO='mb_orders',SKS='mb_sellers',SKR='mb_rate',SKU='mb_usage',SKLT='mb_lowt',SKW='mb_wish';
+let orders=[],sellers=[],usage=[],wishlist=[],noid=1,nsid=1,nuid=1,nwid=1,selCode=null,lowThreshold=1000;
+let cnyRate=0.65;
+
+function load(){
+  try{const d=JSON.parse(localStorage.getItem(SKO)||'{}');orders=d.o||[];noid=d.n||1;}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem(SKU)||'{}');usage=d.u||[];nuid=d.n||1;}catch(e){}
+  const savedRate=parseFloat(localStorage.getItem(SKR));if(savedRate)cnyRate=savedRate;
+  const savedLT=parseFloat(localStorage.getItem(SKLT));if(savedLT>=0)lowThreshold=savedLT;
+  try{const d=JSON.parse(localStorage.getItem(SKW)||'{}');wishlist=d.w||[];nwid=d.n||1;}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem(SKS)||'{}');sellers=d.s||[];nsid=d.n||1;}catch(e){}
+  if(!sellers.length){
+    sellers=[
+      {id:1,name:'小红书Boss',platform:'小红书',bpp:1000},
+      {id:2,name:'拼多多星芒',platform:'拼多多',bpp:1200}
+    ];nsid=3;saveSellers();
+  }
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  refreshSellers();renderStats();renderOrders();renderInventory();renderSellerList();
+  calcBeads();addRow();
+  document.getElementById('u-date').value=new Date().toISOString().slice(0,10);
+  addURow();renderUsageStats();renderUsageList();
+  renderWishlist();renderWishStats();
+}
+
+function saveOrders(){localStorage.setItem(SKO,JSON.stringify({o:orders,n:noid}));autoCloudPush();}
+function saveUsage(){localStorage.setItem(SKU,JSON.stringify({u:usage,n:nuid}));autoCloudPush();}
+function saveSellers(){localStorage.setItem(SKS,JSON.stringify({s:sellers,n:nsid}));}
+function saveWishlist(){localStorage.setItem(SKW,JSON.stringify({w:wishlist,n:nwid}));autoCloudPush();}
+
+function refreshSellers(){
+  document.getElementById('f-seller').innerHTML=sellers.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+function getBpp(sid){return (sellers.find(s=>s.id===parseInt(sid))||{bpp:1000}).bpp;}
+
+function toBeads(amount,unit,sid){
+  amount=parseFloat(amount)||0;
+  if(unit==='beads')return Math.round(amount);
+  if(unit==='grams')return Math.round(amount*100);
+  return Math.round(amount*getBpp(sid));
+}
+function toGrams(beads){return beads/100;}
+
+function calcBeads(){
+  const amtEl=document.getElementById('f-amount');
+  const unitEl=document.getElementById('f-unit');
+  const selEl=document.getElementById('f-seller');
+  const calcEl=document.getElementById('beadCalc');
+  if(!amtEl||!unitEl||!selEl||!calcEl)return;
+  const a=parseFloat(amtEl.value)||0;
+  const u=unitEl.value;
+  const sid=selEl.value;
+  const b=toBeads(a,u,sid);
+  calcEl.textContent=b>0?`= ${b.toLocaleString()} 颗 · ${(b/100).toFixed(1)}g`:'';
+}
+
+document.addEventListener('DOMContentLoaded',()=>{});
+
+// ── 行录入系统 ──
+let rows=[]; // [{id,code,amount,unit,price}]
+let rowCounter=0;
+let activeDropRow=null;
+
+function getLastRow(){return rows.length?rows[rows.length-1]:null;}
+
+function addRow(codeVal){
+  const last=getLastRow();
+  const id=++rowCounter;
+  const row={
+    id,
+    code: codeVal||'',
+    amount: last?last.amount:1,
+    unit:   last?last.unit:'packs',
+    price:  last?last.price:0,
+  };
+  rows.push(row);
+  renderRows();
+  // focus the code input of this new row
+  setTimeout(()=>{
+    const el=document.getElementById('rc-'+id);
+    if(el)el.focus();
+  },30);
+}
+
+function removeRow(id){
+  rows=rows.filter(r=>r.id!==id);
+  if(!rows.length)addRow();
+  else renderRows();
+}
+
+function rowCodeInput(id,val){
+  const r=rows.find(x=>x.id===id);if(!r)return;
+  r.code=val.toUpperCase();
+  // autocomplete
+  showRowAc(id,r.code);
+}
+
+function rowEnter(id){
+  const r=rows.find(x=>x.id===id);if(!r)return;
+  closeRowAc();
+  const code=r.code.trim().toUpperCase();
+  if(!code){addRow();return;}
+  if(!VALID.has(code)){
+    flashRow(id,'var(--red)',code+' 不是有效色号');return;
+  }
+  if(rows.filter(x=>x.id!==id).some(x=>x.code===code)){
+    flashRow(id,'var(--amber)',code+' 已重复');return;
+  }
+  r.code=code;
+  renderRows();
+  addRow();
+}
+
+function flashRow(id,color,msg){
+  const el=document.getElementById('rc-'+id);
+  if(!el)return;
+  const orig=el.placeholder;
+  el.style.borderColor=color;
+  el.placeholder=msg;
+  el.value='';
+  const r=rows.find(x=>x.id===id);if(r)r.code='';
+  setTimeout(()=>{el.style.borderColor='';el.placeholder='色号';},1600);
+}
+
+function rowPickCode(id,code){
+  const r=rows.find(x=>x.id===id);if(!r)return;
+  if(rows.filter(x=>x.id!==id).some(x=>x.code===code)){
+    flashRow(id,'var(--amber)',code+' 已重复');closeRowAc();return;
+  }
+  r.code=code;
+  closeRowAc();
+  renderRows();
+  // move to next row or add one
+  const idx=rows.findIndex(x=>x.id===id);
+  if(idx===rows.length-1)addRow();
+  else setTimeout(()=>{const el=document.getElementById('rc-'+rows[idx+1].id);if(el)el.focus();},30);
+}
+
+function showRowAc(id,q){
+  closeRowAc();
+  if(!q)return;
+  activeDropRow=id;
+  const usedCodes=rows.filter(x=>x.id!==id).map(x=>x.code);
+  const m=COLORS.filter(([c])=>c.startsWith(q)&&!usedCodes.includes(c));
+  if(!m.length)return;
+  const inp=document.getElementById('rc-'+id);
+  if(!inp)return;
+  let drop=document.getElementById('rowAcDrop');
+  if(!drop){drop=document.createElement('div');drop.id='rowAcDrop';drop.className='ac-drop';document.body.appendChild(drop);}
+  const rect=inp.getBoundingClientRect();
+  drop.style.cssText=`position:fixed;top:${rect.bottom+2}px;left:${rect.left}px;width:${rect.width}px;display:block;z-index:999`;
+  drop.innerHTML=m.slice(0,12).map(([c,h])=>`<div class="ac-item" onmousedown="rowPickCode(${id},'${c}')"><div class="ac-dot" style="background:${h}"></div><span class="ac-code">${c}</span><span class="ac-hex">${h}</span></div>`).join('');
+}
+
+function closeRowAc(){
+  activeDropRow=null;
+  const d=document.getElementById('rowAcDrop');
+  if(d)d.style.display='none';
+}
+
+function renderRows(){
+  const container=document.getElementById('rowList');
+  const sid=parseInt(document.getElementById('f-seller')?.value||0);
+  document.getElementById('commitCount').textContent=rows.filter(r=>r.code&&VALID.has(r.code)).length?'('+rows.filter(r=>r.code&&VALID.has(r.code)).length+' 条)':'';
+  container.innerHTML=rows.map(r=>{
+    const hex=CM[r.code]||null;
+    const dotStyle=hex?`background:${hex};border:1px solid rgba(0,0,0,0.1)`:`background:var(--surface2);border:1px dashed var(--border)`;
+    const beads=r.amount&&r.code?toBeads(r.amount,r.unit,sid):0;
+    return `<div style="display:grid;grid-template-columns:1fr 90px 90px 100px 36px;gap:8px;align-items:center;margin-bottom:6px" id="row-${r.id}">
+      <div style="position:relative;display:flex;align-items:center;gap:7px">
+        <div style="width:14px;height:14px;border-radius:50%;flex-shrink:0;${dotStyle}"></div>
+        <input id="rc-${r.id}" type="text" value="${r.code}"
+          placeholder="色号" autocomplete="off"
+          style="flex:1;height:34px;padding:0 9px;font-family:'DM Mono',monospace;font-weight:500;font-size:13px;letter-spacing:0.5px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none"
+          oninput="rowCodeInput(${r.id},this.value)"
+          onblur="setTimeout(closeRowAc,160)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();rowEnter(${r.id})}"/>
+        ${beads>0?`<span style="position:absolute;right:8px;font-size:9px;color:var(--ink3);white-space:nowrap;pointer-events:none">${beads.toLocaleString()}颗</span>`:''}
+      </div>
+      <input type="number" value="${r.amount||''}" placeholder="数量" min="0" step="0.1"
+        style="height:34px;padding:0 8px;font-size:13px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none;width:100%"
+        onchange="rows.find(x=>x.id===${r.id}).amount=parseFloat(this.value)||0;renderRows()"/>
+      <select style="height:34px;padding:0 6px;font-size:12px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none;width:100%"
+        onchange="rows.find(x=>x.id===${r.id}).unit=this.value;renderRows()">
+        <option value="packs"${r.unit==='packs'?' selected':''}>包</option>
+        <option value="grams"${r.unit==='grams'?' selected':''}>克</option>
+        <option value="beads"${r.unit==='beads'?' selected':''}>颗</option>
+      </select>
+      <input type="number" value="${r.price||''}" placeholder="¥" min="0" step="0.01"
+        style="height:34px;padding:0 8px;font-size:13px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none;width:100%"
+        onchange="rows.find(x=>x.id===${r.id}).price=parseFloat(this.value)||0;renderRows()"/>
+      <button onclick="removeRow(${r.id})" style="width:34px;height:34px;border:none;background:none;cursor:pointer;color:var(--ink3);font-size:18px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center" title="删除此行">×</button>
+    </div>`;
+  }).join('');
+}
+
+// legacy stubs
+function onAc(){}
+function pickCode(c){}
+function closeAc(){closeRowAc();}
+function batchCodes(){return[];}
+function renderBatchList(){}
+
+function commitBatch(){
+  const valid=rows.filter(r=>r.code&&VALID.has(r.code)&&r.amount>0);
+  if(!valid.length){alert('请至少输入一个有效色号和数量');return;}
+  const sid=parseInt(document.getElementById('f-seller').value);
+  const status=document.getElementById('f-status').value;
+  const note=document.getElementById('f-note').value.trim();
+  const date=document.getElementById('f-date').value;
+  const seller=sellers.find(s=>s.id===sid);
+  valid.forEach(r=>{
+    const beads=toBeads(r.amount,r.unit,sid);
+    const grams=toGrams(beads);
+    orders.unshift({id:noid++,code:r.code,sid,sellerName:seller?.name||'?',platform:seller?.platform||'',beads,grams,price:r.price,status,note,date});
+  });
+  const saved=valid.length;
+  rows=[];addRow();
+  saveOrders();renderStats();renderOrders();renderInventory();
+  alert(`✓ 已保存 ${saved} 条记录`);
+}
+
+function addOrder(){commitBatch();}
+
+
+
+// ── 补货愿望单 ──
+let wishSelCode = null;
+
+function onWishAc(){
+  const q = document.getElementById('w-code').value.trim().toUpperCase();
+  const drop = document.getElementById('wishAcDrop');
+  wishSelCode = null;
+  if(!q){drop.style.display='none';return;}
+  const used = wishlist.map(w=>w.code);
+  const m = COLORS.filter(([c])=>c.startsWith(q)&&!used.includes(c));
+  if(!m.length){drop.style.display='none';return;}
+  drop.innerHTML = m.slice(0,15).map(([c,h])=>`<div class="ac-item" onmousedown="pickWishCode('${c}')"><div class="ac-dot" style="background:${h}"></div><span class="ac-code">${c}</span><span class="ac-hex">${h}</span></div>`).join('');
+  drop.style.display = 'block';
+}
+function pickWishCode(c){
+  wishSelCode=c;
+  document.getElementById('w-code').value=c;
+  document.getElementById('wishAcDrop').style.display='none';
+  document.getElementById('w-qty').focus();
+}
+function closeWishAc(){ document.getElementById('wishAcDrop').style.display='none'; }
+
+function addWish(){
+  const code = wishSelCode||document.getElementById('w-code').value.trim().toUpperCase();
+  if(!VALID.has(code)){alert('请输入有效的 Mard 色号');return;}
+  if(wishlist.find(w=>w.code===code)){alert(code+' 已在愿望单里');return;}
+  const amount = parseFloat(document.getElementById('w-amount').value)||0;
+  const unit = document.getElementById('w-unit').value;
+  const note = document.getElementById('w-note').value.trim();
+  wishlist.push({id:nwid++, code, amount, unit, note, addedAt:new Date().toISOString().slice(0,10)});
+  wishSelCode=null;
+  document.getElementById('w-code').value='';
+  document.getElementById('w-amount').value='';
+  document.getElementById('w-note').value='';
+  saveWishlist();renderWishlist();renderWishStats();
+  // refocus code input
+  setTimeout(()=>document.getElementById('w-code').focus(),30);
+}
+
+function removeWish(id){
+  wishlist=wishlist.filter(w=>w.id!==id);
+  saveWishlist();renderWishlist();renderWishStats();
+}
+
+function moveToOrder(id){
+  const w=wishlist.find(x=>x.id===id);
+  if(!w)return;
+  // Switch to add page first
+  const btn=document.querySelector('.nav-item');
+  showPage('add',btn);
+  setTimeout(()=>{
+    // Pre-fill first row with the wish code + amount + unit
+    if(rows.length===0)addRow();
+    const firstRow=rows[0];
+    firstRow.code=w.code;
+    if(w.amount)firstRow.amount=w.amount;
+    if(w.unit){
+      const unitMap={'包':'packs','克':'grams','颗':'beads'};
+      firstRow.unit=unitMap[w.unit]||'packs';
+    }
+    renderRows();
+    // Focus the beads input of first row
+    const inp=document.getElementById('rc-'+firstRow.id);
+    if(inp)inp.focus();
+  },100);
+}
+
+function renderWishStats(){
+  const el=document.getElementById('wishStatsRow');
+  if(!el)return;
+  el.innerHTML=`
+    <div class="stat-card"><div class="sn">${wishlist.length}</div><div class="sl">想补色号数</div></div>`;
+}
+
+function renderWishlist(){
+  const wrap=document.getElementById('wishList');
+  if(!wrap)return;
+  if(!wishlist.length){
+    wrap.innerHTML='<div class="empty">愿望单是空的，添加你想补货的色号吧！</div>';
+    return;
+  }
+  wrap.innerHTML=wishlist.map(w=>{
+    const hex=CM[w.code]||'#ddd';
+    // Check current stock
+    const arrived=orders.filter(o=>o.status==='arrived'&&o.code===w.code).reduce((a,o)=>a+o.beads,0);
+    const used=usage.filter(u=>u.code===w.code).reduce((a,u)=>a+u.beads,0);
+    const pending=orders.filter(o=>o.status==='pending'&&o.code===w.code).reduce((a,o)=>a+o.beads,0);
+    const remain=Math.max(0,arrived-used);
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="width:28px;height:28px;border-radius:50%;background:${hex};border:2px solid rgba(0,0,0,0.1);flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'DM Mono',monospace;font-size:15px;font-weight:700;color:var(--ink)">${w.code}</div>
+        <div style="font-size:11px;color:var(--ink3);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap">
+          ${w.amount?`<span>预计：${w.amount} ${w.unit}</span>`:''}
+          ${remain>0?`<span style="color:var(--green)">库存 ${remain.toLocaleString()}颗</span>`:'<span style="color:var(--ink3)">无库存</span>'}
+          ${pending>0?`<span style="color:var(--amber)">待到货 ${pending.toLocaleString()}颗</span>`:''}
+          ${w.note?`<span style="color:var(--ink3)">${w.note}</span>`:''}
+          <span style="color:var(--ink3)">${w.addedAt}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:auto" onclick="moveToOrder(${w.id})">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+          已下单
+        </button>
+        <button class="icon-btn" onclick="removeWish(${w.id})" aria-label="删除">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── 用出行录入 ──
+let uRows=[];
+let uRowCounter=0;
+let activeUDropRow=null;
+
+function addURow(){
+  const id=++uRowCounter;
+  uRows.push({id,code:'',beads:0});
+  renderURows();
+  setTimeout(()=>{const el=document.getElementById('uc-'+id);if(el)el.focus();},30);
+}
+
+function removeURow(id){
+  uRows=uRows.filter(r=>r.id!==id);
+  if(!uRows.length)addURow();
+  else renderURows();
+}
+
+function uRowCodeInput(id,val){
+  const r=uRows.find(x=>x.id===id);if(!r)return;
+  r.code=val.toUpperCase();
+  showURowAc(id,r.code);
+}
+
+function uRowEnter(id){
+  const r=uRows.find(x=>x.id===id);if(!r)return;
+  closeURowAc();
+  const code=r.code.trim().toUpperCase();
+  if(!code){addURow();return;}
+  if(!VALID.has(code)){flashURow(id,'var(--red)',code+' 不是有效色号');return;}
+  if(uRows.filter(x=>x.id!==id).some(x=>x.code===code)){flashURow(id,'var(--amber)',code+' 已重复');return;}
+  r.code=code;
+  renderURows();
+  // focus beads input
+  setTimeout(()=>{const el=document.getElementById('ub-'+id);if(el){el.focus();el.select();}},30);
+}
+
+function uBeadsEnter(id){
+  closeURowAc();
+  const idx=uRows.findIndex(x=>x.id===id);
+  if(idx===uRows.length-1)addURow();
+  else setTimeout(()=>{const el=document.getElementById('uc-'+uRows[idx+1].id);if(el)el.focus();},30);
+}
+
+function flashURow(id,color,msg){
+  const el=document.getElementById('uc-'+id);if(!el)return;
+  el.style.borderColor=color;el.placeholder=msg;el.value='';
+  const r=uRows.find(x=>x.id===id);if(r)r.code='';
+  setTimeout(()=>{el.style.borderColor='';el.placeholder='色号';},1600);
+}
+
+function uPickCode(id,code){
+  const r=uRows.find(x=>x.id===id);if(!r)return;
+  if(uRows.filter(x=>x.id!==id).some(x=>x.code===code)){flashURow(id,'var(--amber)',code+' 已重复');closeURowAc();return;}
+  r.code=code;closeURowAc();renderURows();
+  setTimeout(()=>{const el=document.getElementById('ub-'+id);if(el){el.focus();el.select();}},30);
+}
+
+function showURowAc(id,q){
+  closeURowAc();if(!q)return;
+  activeUDropRow=id;
+  const used=uRows.filter(x=>x.id!==id).map(x=>x.code);
+  const m=COLORS.filter(([c])=>c.startsWith(q)&&!used.includes(c));
+  if(!m.length)return;
+  const inp=document.getElementById('uc-'+id);if(!inp)return;
+  let drop=document.getElementById('uRowAcDrop');
+  if(!drop){drop=document.createElement('div');drop.id='uRowAcDrop';drop.className='ac-drop';document.body.appendChild(drop);}
+  const rect=inp.getBoundingClientRect();
+  drop.style.cssText=`position:fixed;top:${rect.bottom+2}px;left:${rect.left}px;width:${Math.max(rect.width,180)}px;display:block;z-index:999`;
+  drop.innerHTML=m.slice(0,12).map(([c,h])=>`<div class="ac-item" onmousedown="uPickCode(${id},'${c}')"><div class="ac-dot" style="background:${h}"></div><span class="ac-code">${c}</span><span class="ac-hex">${h}</span></div>`).join('');
+}
+
+function closeURowAc(){
+  activeUDropRow=null;
+  const d=document.getElementById('uRowAcDrop');if(d)d.style.display='none';
+}
+
+function renderURows(){
+  const container=document.getElementById('uRowList');if(!container)return;
+  document.getElementById('uCommitCount').textContent=uRows.filter(r=>r.code&&VALID.has(r.code)&&r.beads>0).length?'('+uRows.filter(r=>r.code&&VALID.has(r.code)&&r.beads>0).length+' 条)':'';
+  container.innerHTML=uRows.map(r=>{
+    const hex=CM[r.code]||null;
+    const dotStyle=hex?`background:${hex};border:1px solid rgba(0,0,0,0.1)`:`background:var(--surface2);border:1px dashed var(--border)`;
+    // calc remaining for this code
+    const arrived=orders.filter(o=>o.status==='arrived'&&o.code===r.code).reduce((a,o)=>a+o.beads,0);
+    const usedSoFar=usage.filter(u=>u.code===r.code).reduce((a,u)=>a+u.beads,0);
+    const remain=Math.max(0,arrived-usedSoFar);
+    return `<div style="display:grid;grid-template-columns:1fr 120px 36px;gap:8px;align-items:center;margin-bottom:6px">
+      <div style="position:relative;display:flex;align-items:center;gap:7px">
+        <div style="width:14px;height:14px;border-radius:50%;flex-shrink:0;${dotStyle}"></div>
+        <input id="uc-${r.id}" type="text" value="${r.code}" placeholder="色号" autocomplete="off"
+          style="flex:1;height:34px;padding:0 9px;font-family:'DM Mono',monospace;font-weight:500;font-size:13px;letter-spacing:0.5px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none"
+          oninput="uRowCodeInput(${r.id},this.value)" onblur="setTimeout(closeURowAc,160)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();uRowEnter(${r.id})}"/>
+        ${r.code&&remain>=0?`<span style="position:absolute;right:8px;font-size:9px;color:var(--ink3);pointer-events:none">剩${remain.toLocaleString()}</span>`:''}
+      </div>
+      <input id="ub-${r.id}" type="number" value="${r.beads||''}" placeholder="颗数" min="0" step="100"
+        style="height:34px;padding:0 8px;font-size:13px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none;width:100%"
+        onchange="uRows.find(x=>x.id===${r.id}).beads=parseInt(this.value)||0"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();uBeadsEnter(${r.id})}"/>
+      <button onclick="removeURow(${r.id})" style="width:34px;height:34px;border:none;background:none;cursor:pointer;color:var(--ink3);font-size:18px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center" title="删除">×</button>
+    </div>`;
+  }).join('');
+}
+
+function commitUsage(){
+  const valid=uRows.filter(r=>r.code&&VALID.has(r.code)&&r.beads>0);
+  if(!valid.length){alert('请至少输入一个有效色号和颗数');return;}
+  const date=document.getElementById('u-date').value;
+  valid.forEach(r=>{
+    usage.unshift({id:nuid++,code:r.code,beads:r.beads,date});
+  });
+  const saved=valid.length;
+  uRows=[];addURow();
+  saveUsage();renderStats();renderInventory();renderUsageStats();renderUsageList();
+  alert(`✓ 已记录 ${saved} 条分装`);
+}
+
+function deleteUsage(id){
+  if(!confirm('确定删除这条用出记录？'))return;
+  usage=usage.filter(u=>u.id!==id);
+  saveUsage();renderStats();renderInventory();renderUsageStats();renderUsageList();
+}
+
+function renderUsageStats(){
+  const el=document.getElementById('usageStatsRow');if(!el)return;
+  const tUsed=usage.reduce((a,u)=>a+u.beads,0);
+  const tEntries=usage.length;
+  const codes=new Set(usage.map(u=>u.code)).size;
+  el.innerHTML=`
+    <div class="stat-card"><div class="sn r">${tUsed.toLocaleString()}</div><div class="sl">累计分装颗数</div></div>
+    <div class="stat-card"><div class="sn">${tEntries}</div><div class="sl">分装记录笔数</div></div>
+    <div class="stat-card"><div class="sn">${codes}</div><div class="sl">涉及色号数</div></div>`;
+}
+
+function renderUsageList(){
+  const q=(document.getElementById('uFilterQ')?.value||'').toUpperCase();
+  const rows=usage.filter(u=>!q||u.code.startsWith(q));
+  const tb=document.getElementById('usageTbody');if(!tb)return;
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="5" class="empty">暂无用出记录</td></tr>`;return;}
+  tb.innerHTML=rows.map(u=>{
+    const hex=CM[u.code]||'#ccc';
+    return `<tr>
+      <td><span class="cdot" style="background:${hex}"></span><span class="mono">${u.code}</span></td>
+      <td class="mono">${u.beads.toLocaleString()}</td>
+      <td class="mono">${(u.beads/100).toFixed(1)}g</td>
+      <td class="mono" style="color:var(--ink3)">${u.date||''}</td>
+      <td><button class="icon-btn" onclick="deleteUsage(${u.id})" aria-label="删除">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6M14,11v6"/></svg>
+      </button></td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteOrder(id){
+  if(!confirm('确定删除？'))return;
+  orders=orders.filter(o=>o.id!==id);
+  saveOrders();renderStats();renderOrders();renderInventory();
+}
+
+function toggleStatus(id){
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  o.status=o.status==='pending'?'arrived':'pending';
+  saveOrders();renderStats();renderOrders();renderInventory();
+}
+
+function renderStats(){
+  const arr=orders.filter(o=>o.status==='arrived');
+  const pend=orders.filter(o=>o.status==='pending');
+  const tBeads=arr.reduce((a,o)=>a+o.beads,0);
+  const tGrams=arr.reduce((a,o)=>a+o.grams,0);
+  const tUsed=usage.reduce((a,u)=>a+u.beads,0);
+  const tRemain=Math.max(0,tBeads-tUsed);
+  const tSpend=orders.reduce((a,o)=>a+o.price,0);
+  const codes=new Set(orders.map(o=>o.code)).size;
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card"><div class="sn">${orders.length}</div><div class="sl">进货笔数</div></div>
+    <div class="stat-card"><div class="sn g">${tBeads.toLocaleString()}</div><div class="sl">已到颗数</div></div>
+    <div class="stat-card"><div class="sn r">${tUsed.toLocaleString()}</div><div class="sl">已用颗数</div></div>
+    <div class="stat-card"><div class="sn g">${tRemain.toLocaleString()}</div><div class="sl">剩余颗数</div></div>
+    <div class="stat-card"><div class="sn a">¥${tSpend.toFixed(2)}</div><div class="sl">总花费(¥)</div></div>
+    <div class="stat-card"><div class="sn a">RM ${(tSpend*cnyRate).toFixed(2)}</div><div class="sl">总花费(RM)</div></div>
+    <div class="stat-card"><div class="sn">${codes}</div><div class="sl">色号种类</div></div>
+    <div class="stat-card"><div class="sn a">${pend.length}</div><div class="sl">待到货</div></div>`;
+  document.getElementById('sideStats').innerHTML=`
+    <div class="ss-row"><span class="ss-label">BEADS</span><span class="ss-val">${tBeads.toLocaleString()}</span></div>
+    <div class="ss-row"><span class="ss-label">COLOURS</span><span class="ss-val">${codes}</span></div>
+    <div class="ss-row"><span class="ss-label">花费</span><span class="ss-val">RM ${(tSpend*cnyRate).toFixed(2)}</span></div>`;
+}
+
+function renderOrders(){
+  const q=(document.getElementById('filterQ')?.value||'').toLowerCase();
+  const s=document.getElementById('filterS')?.value||'';
+  const rows=orders.filter(o=>(!q||o.code.toLowerCase().includes(q)||o.sellerName.toLowerCase().includes(q))&&(!s||o.status===s));
+  const tb=document.getElementById('ordersTbody');
+  if(!rows.length){tb.innerHTML=`<tr><td colspan="11" class="empty">暂无记录</td></tr>`;return;}
+  tb.innerHTML=rows.map(o=>{
+    const hex=CM[o.code]||'#ccc';
+    const badge=o.status==='arrived'
+      ?`<span class="badge badge-g" onclick="toggleStatus(${o.id})"><span class="dot6"></span>已到货</span>`
+      :`<span class="badge badge-a" onclick="toggleStatus(${o.id})"><span class="dot6"></span>待到货</span>`;
+    return `<tr>
+      <td><span class="cdot" style="background:${hex}"></span><span class="mono">${o.code}</span></td>
+      <td style="font-weight:500">${o.sellerName}</td>
+      <td><span class="pill">${o.platform}</span></td>
+      <td class="mono">${o.beads.toLocaleString()}</td>
+      <td class="mono">${o.grams.toFixed(1)}g</td>
+      <td class="mono">${o.price>0?'¥'+o.price.toFixed(2):'-'}</td>
+      <td class="mono" style="color:var(--amber)">${o.price>0?'RM '+(o.price*cnyRate).toFixed(2):'-'}</td>
+      <td>${badge}</td>
+      <td class="mono" style="color:var(--ink3)">${o.date||''}</td>
+      <td style="color:var(--ink3);max-width:110px;overflow:hidden;text-overflow:ellipsis">${o.note||''}</td>
+      <td><button class="icon-btn" onclick="deleteOrder(${o.id})" aria-label="删除">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6M14,11v6"/></svg>
+      </button></td>
+    </tr>`;
+  }).join('');
+}
+
+function saveRate(){
+  const v=parseFloat(document.getElementById('rateInput').value);
+  if(v>0){cnyRate=v;localStorage.setItem(SKR,v);renderInventory();}
+}
+
+function saveLowThreshold(){
+  const v=parseFloat(document.getElementById('lowThreshold').value);
+  if(v>=0){lowThreshold=v;localStorage.setItem(SKLT,v);}
+}
+
+function copyRestockList(){
+  const byCode={};
+  orders.forEach(o=>{
+    if(!byCode[o.code])byCode[o.code]={beads:0,used:0};
+    if(o.status==='arrived')byCode[o.code].beads+=o.beads;
+  });
+  usage.forEach(u=>{
+    if(!byCode[u.code])byCode[u.code]={beads:0,used:0};
+    byCode[u.code].used+=u.beads;
+  });
+  const low=COLORS.map(([c])=>c).filter(c=>{
+    const info=byCode[c];
+    const remain=info?Math.max(0,info.beads-info.used):0;
+    return remain<=lowThreshold&&(info?.beads>0||remain===0&&info);
+  }).filter(c=>byCode[c]);
+  if(!low.length){alert('目前没有低库存色号！');return;}
+  const lines=low.map(c=>{
+    const info=byCode[c];
+    const remain=Math.max(0,info.beads-info.used);
+    return `${c}：剩 ${remain.toLocaleString()} 颗`;
+  });
+  const text='补货清单\n'+new Date().toLocaleDateString('zh-CN')+'\n\n'+lines.join('\n');
+  navigator.clipboard.writeText(text).then(()=>alert('✓ 补货清单已复制！可以直接发给卖家')).catch(()=>alert(text));
+}
+
+function renderInventory(){
+  const q=(document.getElementById('invQ')?.value||'').toUpperCase();
+  const f=document.getElementById('invF')?.value||'has';
+  const rateEl=document.getElementById('rateInput');
+  if(rateEl&&!rateEl.value)rateEl.value=cnyRate;
+  const ltEl=document.getElementById('lowThreshold');
+  if(ltEl&&!ltEl.value)ltEl.value=lowThreshold;
+  const byCode={};
+  orders.forEach(o=>{
+    if(!byCode[o.code])byCode[o.code]={beads:0,grams:0,used:0,cny:0,pending:0,wish:null,sellers:new Set()};
+    if(o.status==='arrived'){
+      byCode[o.code].beads+=o.beads;
+      byCode[o.code].grams+=o.grams;
+    } else {
+      byCode[o.code].pending+=o.beads;
+    }
+    byCode[o.code].cny+=o.price;
+    byCode[o.code].sellers.add(o.sellerName);
+  });
+  usage.forEach(u=>{
+    if(!byCode[u.code])byCode[u.code]={beads:0,grams:0,used:0,cny:0,sellers:new Set()};
+    byCode[u.code].used+=u.beads;
+  });
+
+  wishlist.forEach(w=>{
+    if(!byCode[w.code])byCode[w.code]={beads:0,grams:0,used:0,cny:0,pending:0,wish:null,sellers:new Set()};
+    byCode[w.code].wish={amount:w.amount,unit:w.unit};
+  });
+
+  // ── 低库存提醒横幅 ──
+  const lowCodes=COLORS.map(([c])=>c).filter(c=>{
+    if(!byCode[c])return false;
+    const remain=Math.max(0,byCode[c].beads-byCode[c].used);
+    return remain>0&&remain<=lowThreshold;
+  });
+  const banner=document.getElementById('lowStockBanner');
+  const lowList=document.getElementById('lowStockList');
+  const lowCount=document.getElementById('lowStockCount');
+  if(banner){
+    if(lowCodes.length){
+      banner.style.display='block';
+      lowCount.textContent=`${lowCodes.length} 个色号需要补货`;
+      lowList.innerHTML=lowCodes.map(c=>{
+        const hex=CM[c]||'#ddd';
+        const remain=Math.max(0,byCode[c].beads-byCode[c].used);
+        return `<div style="display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid #e8c87a;border-radius:20px;padding:3px 10px 3px 6px;font-size:11px;font-family:'DM Mono',monospace;font-weight:500;color:var(--amber)">
+          <div style="width:10px;height:10px;border-radius:50%;background:${hex};border:1px solid rgba(0,0,0,0.1);flex-shrink:0"></div>
+          ${c} · ${remain.toLocaleString()}颗
+        </div>`;
+      }).join('');
+    } else {
+      banner.style.display='none';
+    }
+  }
+
+  let codes=COLORS.map(([c])=>c).filter(c=>{
+    if(q&&!c.startsWith(q))return false;
+    const info=byCode[c];
+    const remain=info?Math.max(0,info.beads-info.used):0;
+    const pending=info?info.pending:0;
+    const wish=info?info.wish:null;
+    if(f==='has')return remain>0||pending>0||!!wish;
+    if(f==='low')return remain>0&&remain<=lowThreshold;
+    if(f==='zero')return remain===0&&info&&pending===0;
+    return true;
+  });
+  const sort=document.getElementById('invSort')?.value||'desc';
+  codes.sort((a,b)=>{
+    const ra=byCode[a]?Math.max(0,byCode[a].beads-byCode[a].used):0;
+    const rb=byCode[b]?Math.max(0,byCode[b].beads-byCode[b].used):0;
+    const pa=byCode[a]?byCode[a].pending:0;
+    const pb=byCode[b]?byCode[b].pending:0;
+    if(sort==='desc')return (rb+pb)-(ra+pa);
+    if(sort==='asc')return (ra+pa)-(rb+pb);
+    return a.localeCompare(b);
+  });
+  const grid=document.getElementById('invGrid');
+  if(!codes.length){grid.innerHTML='<div class="empty">无符合条件的色号</div>';return;}
+  grid.innerHTML=codes.map(c=>{
+    const hex=CM[c]||'#ccc';
+    const info=byCode[c];
+    const arrived=info?info.beads:0;
+    const used=info?info.used:0;
+    const pending=info?info.pending:0;
+    const wish=info?info.wish:null;
+    const remain=Math.max(0,arrived-used);
+    const grams=info?info.grams:0;
+    const remainG=(remain/100).toFixed(0);
+    const cny=info?info.cny:0;
+    const rm=cny*cnyRate;
+    const srcs=info?[...info.sellers].join(', '):'';
+    const low=remain>0&&remain<=lowThreshold;
+    return `<div class="inv-card${remain>0?' has':pending>0?' pending':wish?' wish':''}${low?' low':''}">
+      <div class="inv-cdot" style="background:${hex}"></div>
+      <div class="inv-code">${c}</div>
+      ${remain>0?`<div style="font-size:11px;font-weight:500;font-family:'DM Mono',monospace;color:${low?'var(--amber)':'var(--ink2)'};line-height:1.3">${remain.toLocaleString()} 颗</div><div style="font-size:9px;color:var(--ink3)">${remainG}g</div>`:'<div style="font-size:10px;color:var(--ink3)">无库存</div>'}
+      ${pending>0?`<div style="font-size:10px;font-weight:600;color:var(--amber);font-family:'DM Mono',monospace;margin-top:4px;padding:2px 6px;background:var(--amber-bg);border-radius:4px;display:inline-block">待到 ${pending.toLocaleString()}颗</div>`:''}
+      ${wish?`<div style="font-size:10px;font-weight:600;color:#7C3AED;font-family:'DM Mono',monospace;margin-top:4px;padding:2px 6px;background:#F3EEFF;border-radius:4px;display:inline-block">待补 ${wish.amount?wish.amount+wish.unit:''}</div>`:''}
+      ${used>0?`<div style="font-size:9px;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px">已分装 ${used.toLocaleString()}</div>`:''}
+      ${cny>0?`<div style="font-size:9px;color:var(--ink2);margin-top:3px;font-family:'DM Mono',monospace">¥${cny.toFixed(2)} · RM ${rm.toFixed(2)}</div>`:''}
+      ${srcs?`<div class="inv-src" title="${srcs}">${srcs}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderSellerList(){
+  const wrap=document.getElementById('sellerList');
+  const platCol={'拼多多':'#E8610A','小红书':'#FF2442','淘宝':'#FF5000','抖音':'#161823','线下':'#1A6B3C','其他':'#5C5850'};
+  if(!sellers.length){wrap.innerHTML='<div class="empty">No sellers yet</div>';return;}
+  wrap.innerHTML=sellers.map(s=>{
+    const cnt=orders.filter(o=>o.sid===s.id).length;
+    const col=platCol[s.platform]||'#5C5850';
+    const xm=s.bpp===1200;
+    return `<div class="sc">
+      <div class="sc-av" style="background:${col}22;color:${col}">${s.name.slice(0,2).toUpperCase()}</div>
+      <div>
+        <div class="sc-name">${s.name}</div>
+        <div class="sc-meta"><span class="pill">${s.platform}</span>${xm?` <span class="pill pill-amber">1,200/pack</span>`:''}</div>
+      </div>
+      <div class="sc-cnt">${cnt} 笔记录</div>
+      <button class="icon-btn" onclick="delSeller(${s.id})" aria-label="删除卖家">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function addSeller(){
+  const name=document.getElementById('s-name').value.trim();
+  if(!name){alert('请输入卖家名称');return;}
+  sellers.push({id:nsid++,name,platform:document.getElementById('s-platform').value,bpp:parseInt(document.getElementById('s-bpp').value)||1000});
+  document.getElementById('s-name').value='';
+  saveSellers();refreshSellers();renderSellerList();
+}
+
+function delSeller(id){
+  if(orders.find(o=>o.sid===id)){alert('该卖家有进货记录，无法删除');return;}
+  sellers=sellers.filter(s=>s.id!==id);
+  saveSellers();refreshSellers();renderSellerList();
+}
+
+function exportCSV(){
+  const rows=[['色号','卖家','平台','颗数','克数','单价(¥)','马币(RM)','状态','日期','备注']];
+  orders.forEach(o=>rows.push([o.code,o.sellerName,o.platform,o.beads,o.grams.toFixed(1),o.price.toFixed(2),o.status==='arrived'?'Arrived':'待到货',o.date,o.note]));
+  const csv='\uFEFF'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='Mard拼豆进货记录.csv';a.click();
+}
+
+
+function exportBackup(){
+  const backup={
+    version:1,
+    exportedAt:new Date().toISOString(),
+    orders,sellers,usage,wishlist,
+    meta:{noid,nsid,nuid,nwid}
+  };
+  const json=JSON.stringify(backup,null,2);
+  const a=document.createElement('a');
+  const date=new Date().toLocaleDateString('zh-CN').replace(/\//g,'-');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(json);
+  a.download=`Mard拼豆备份_${date}.json`;
+  a.click();
+}
+
+function importFromText(){
+  const text=document.getElementById('pasteJson').value.trim();
+  if(!text){alert('请先粘贴备份文字');return;}
+  const msg=document.getElementById('importMsg');
+  try{
+    const data=JSON.parse(text);
+    doImport(data,msg);
+    document.getElementById('pasteJson').value='';
+  }catch(e){
+    msg.style.display='block';
+    msg.style.color='var(--red)';
+    msg.textContent='✗ 格式错误，请确认粘贴的是完整的备份文字：'+e.message;
+  }
+}
+
+function importBackup(file){
+  if(!file)return;
+  const msg=document.getElementById('importMsg');
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      doImport(data,msg);
+    }catch(err){
+      msg.style.display='block';
+      msg.style.color='var(--red)';
+      msg.textContent='✗ 导入失败：'+err.message;
+    }
+  };
+  reader.readAsText(file,'utf-8');
+}
+
+function doImport(data,msg){
+  if(!data.orders||!Array.isArray(data.orders))throw new Error('文件格式不正确，请使用本软件导出的备份文件');
+  if(!confirm(`确定导入？\n将覆盖当前 ${orders.length} 条记录，导入 ${data.orders.length} 条记录。`)){
+    document.getElementById('importFile').value='';return;
+  }
+  orders=data.orders.map(o=>({...o,id:Number(o.id),sid:Number(o.sid),beads:Number(o.beads),grams:Number(o.grams),price:Number(o.price)}));
+  sellers=(data.sellers||[]).map(s=>({...s,id:Number(s.id),bpp:Number(s.bpp)||1000}));
+  usage=(data.usage||[]).map(u=>({...u,id:Number(u.id),beads:Number(u.beads)}));
+  noid=data.meta?.noid||(orders.length?Math.max(...orders.map(o=>o.id))+1:1);
+  nsid=data.meta?.nsid||(sellers.length?Math.max(...sellers.map(s=>s.id))+1:1);
+  nuid=data.meta?.nuid||(usage.length?Math.max(...usage.map(u=>u.id))+1:1);
+  saveOrders();saveSellers();saveUsage();
+  refreshSellers();
+  renderStats();
+  renderOrders();
+  renderInventory();
+  renderSellerList();
+  renderUsageStats();
+  renderUsageList();
+  rows=[];addRow();
+  uRows=[];addURow();
+  if(msg){
+    msg.style.display='block';
+    msg.style.color='var(--green)';
+    msg.innerHTML=`✓ 导入成功！<br>进货记录：${orders.length} 条<br>分装记录：${usage.length} 条<br>卖家：${sellers.length} 个<br><br>现在可以点左边「进货记录」查看`;
+  }
+  document.getElementById('importFile').value='';
+}
+
+
+// ── JSONBin 云端同步 ──
+const SKJBKEY='mb_jbkey', SKJBBIN='mb_jbbin';
+let jbKey='', jbBin='';
+
+function saveJbKey(){
+  jbKey=document.getElementById('jbKey').value.trim();
+  localStorage.setItem(SKJBKEY,jbKey);
+}
+
+function saveJbBin(){
+  jbBin=document.getElementById('jbBin').value.trim();
+  localStorage.setItem(SKJBBIN,jbBin);
+}
+
+function loadJbConfig(){
+  jbKey=localStorage.getItem(SKJBKEY)||'';
+  jbBin=localStorage.getItem(SKJBBIN)||'';
+  const keyEl=document.getElementById('jbKey');
+  const binEl=document.getElementById('jbBin');
+  if(keyEl&&jbKey)keyEl.value=jbKey;
+  if(binEl&&jbBin)binEl.value=jbBin;
+}
+
+function cloudMsg(msg,ok){
+  const el=document.getElementById('cloudMsg');
+  if(!el)return;
+  el.style.display='block';
+  el.style.color=ok?'var(--green)':'var(--red)';
+  el.innerHTML=msg;
+}
+
+function getPayload(){
+  return {orders,sellers,usage,meta:{noid,nsid,nuid},exportedAt:new Date().toISOString()};
+}
+
+async function cloudInit(){
+  jbKey=document.getElementById('jbKey').value.trim();
+  if(!jbKey){alert('请先填入 JSONBin Secret Key');return;}
+  cloudMsg('正在初始化…',true);
+  try{
+    const r=await fetch('https://api.jsonbin.io/v3/b',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Master-Key':jbKey,'X-Bin-Name':'MardBeads','X-Bin-Private':'false'},
+      body:JSON.stringify(getPayload())
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status+' — 请检查 API Key 是否正确');
+    const data=await r.json();
+    jbBin=data.metadata.id;
+    localStorage.setItem(SKJBKEY,jbKey);
+    localStorage.setItem(SKJBBIN,jbBin);
+    document.getElementById('jbBin').value=jbBin;
+    cloudMsg(`✓ 初始化成功！<br>Bin ID：<strong>${jbBin}</strong><br>请把这个 ID 记下来，手机也需要填`,true);
+  }catch(e){
+    cloudMsg('✗ 初始化失败：'+e.message,false);
+  }
+}
+
+async function cloudPush(){
+  if(!jbKey||!jbBin)return;
+  setSyncDot('syncing');
+  const msgEl=document.getElementById('cloudMsg');
+  try{
+    const r=await fetch(`https://api.jsonbin.io/v3/b/${jbBin}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':jbKey},
+      body:JSON.stringify(getPayload())
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    setSyncDot('ok');
+    if(msgEl&&msgEl.style.display!=='none')cloudMsg('✓ 已推送到云端 · '+new Date().toLocaleTimeString('zh-CN'),true);
+  }catch(e){
+    setSyncDot('error');
+    if(msgEl&&msgEl.style.display!=='none')cloudMsg('✗ 推送失败：'+e.message,false);
+  }
+}
+
+async function cloudPull(){
+  if(!jbKey||!jbBin){alert('请先填入 API Key 和 Bin ID');return;}
+  setSyncDot('syncing');
+  cloudMsg('拉取中…',true);
+  try{
+    const r=await fetch(`https://api.jsonbin.io/v3/b/${jbBin}/latest`,{
+      headers:{'X-Master-Key':jbKey}
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    const d=data.record;
+    if(!d.orders)throw new Error('云端数据格式错误');
+    doImport(d,null);
+    setSyncDot('ok');
+    cloudMsg(`✓ 已从云端拉取<br>进货：${orders.length} 条 · 分装：${usage.length} 条`,true);
+  }catch(e){
+    setSyncDot('error');
+    cloudMsg('✗ 拉取失败：'+e.message,false);
+  }
+}
+
+// 自动推送（每次保存时）
+let _pushTimer=null;
+function autoCloudPush(){
+  if(!jbKey||!jbBin)return;
+  // debounce: wait 1.5s after last change before pushing
+  clearTimeout(_pushTimer);
+  _pushTimer=setTimeout(()=>cloudPush(),1500);
+}
+
+function setSyncDot(state){
+  const el=document.getElementById('syncDot');
+  if(!el)return;
+  const map={
+    idle:    ['rgba(255,255,255,0.25)','● 本地'],
+    syncing: ['#D4A017',              '↻ 同步中…'],
+    ok:      ['#4CAF7A',              '● 已同步'],
+    error:   ['#E05555',              '● 同步失败'],
+  };
+  const [color,label]=map[state]||map.idle;
+  el.style.color=color;
+  el.textContent=label;
+}
+
+async function autoCloudPull(){
+  if(!jbKey||!jbBin)return;
+  setSyncDot('syncing');
+  try{
+    const r=await fetch(`https://api.jsonbin.io/v3/b/${jbBin}/latest`,{
+      headers:{'X-Master-Key':jbKey}
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    const d=data.record;
+    if(!d.orders)throw new Error('no data');
+    // silent import - no confirm
+    orders=d.orders.map(o=>({...o,id:Number(o.id),sid:Number(o.sid),beads:Number(o.beads),grams:Number(o.grams),price:Number(o.price)}));
+    sellers=(d.sellers||[]).map(s=>({...s,id:Number(s.id),bpp:Number(s.bpp)||1000}));
+    usage=(d.usage||[]).map(u=>({...u,id:Number(u.id),beads:Number(u.beads)}));
+    noid=d.meta?.noid||(orders.length?Math.max(...orders.map(o=>o.id))+1:1);
+    nsid=d.meta?.nsid||(sellers.length?Math.max(...sellers.map(s=>s.id))+1:1);
+    nuid=d.meta?.nuid||(usage.length?Math.max(...usage.map(u=>u.id))+1:1);
+    localStorage.setItem(SKO,JSON.stringify({o:orders,n:noid}));
+    localStorage.setItem(SKS,JSON.stringify({s:sellers,n:nsid}));
+    localStorage.setItem(SKU,JSON.stringify({u:usage,n:nuid}));
+    refreshSellers();renderStats();renderOrders();renderInventory();
+    renderSellerList();renderUsageStats();renderUsageList();
+    rows=[];addRow();uRows=[];addURow();
+    setSyncDot('ok');
+  }catch(e){
+    setSyncDot('error');
+    console.warn('Auto pull failed:',e.message);
+  }
+}
+
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(name==='orders')renderOrders();
+  if(name==='inventory'){const lt=document.getElementById('lowThreshold');if(lt)lt.value=lowThreshold;renderInventory();}
+  if(name==='sellers')renderSellerList();
+  if(name==='usage'){renderUsageStats();renderUsageList();renderURows();}
+  if(name==='cloud'){loadJbConfig();const m=document.getElementById('cloudMsg');if(m)m.style.display='none';}
+  if(name==='wishlist'){renderWishlist();renderWishStats();}
+  if(name==='sync'){
+    const el=document.getElementById('exportInfo');
+    if(el)el.textContent=`当前共 ${orders.length} 条进货记录，${sellers.length} 个卖家，${new Set(orders.map(o=>o.code)).size} 个色号`;
+    const msg=document.getElementById('importMsg');
+    if(msg)msg.style.display='none';
+  }
+}
+
+load();
+loadJbConfig();
+// Auto pull on startup if credentials exist
+if(jbKey&&jbBin){
+  autoCloudPull();
+} else {
+  // Show prompt in sync dot if no credentials
+  setTimeout(()=>{
+    const el=document.getElementById('syncDot');
+    if(el&&!jbKey)el.textContent='● 未连接云端';
+  },100);
+}
+</script>
+</body>
+</html>
