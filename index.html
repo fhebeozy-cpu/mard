@@ -479,74 +479,73 @@ tr:hover td{background:var(--surface2)}
   <div id="page-cloud" class="page">
     <div class="page-hd">
       <div class="page-title">云端同步</div>
-      <div class="page-sub">用 JSONBin 免费储存，手机电脑同一份数据</div>
+      <div class="page-sub">数据存在你的 GitHub 私人 repo，完全免费</div>
     </div>
 
     <div class="card" style="margin-bottom:14px">
-      <div class="card-title">第一步：获取免费 API Key</div>
-      <div style="font-size:13px;color:var(--ink2);line-height:2.2;margin-bottom:12px">
+      <div class="card-title">设置步骤（只需一次）</div>
+      <div style="font-size:13px;color:var(--ink2);line-height:2.2;margin-bottom:4px">
         <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:4px">
           <div style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">1</div>
-          <div>打开 <a href="https://jsonbin.io" target="_blank" style="color:var(--accent);font-weight:500">jsonbin.io</a> → 点右上角 <strong>Sign Up</strong>（用 Google 账号一秒注册）</div>
+          <div>打开 <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--accent);font-weight:500">github.com/settings/tokens/new</a>（需要登入）</div>
         </div>
         <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:4px">
           <div style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">2</div>
-          <div>登入后点右上角头像 → <strong>API Keys</strong> → 复制 <strong>Access Key</strong>（以 <code style="background:var(--surface2);padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px">$2a$</code> 开头）</div>
+          <div>Note 随便填，Expiration 选 <strong>No expiration</strong>，勾选 <strong>repo</strong> 权限，点「Generate token」</div>
         </div>
         <div style="display:flex;gap:10px;align-items:flex-start">
           <div style="min-width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">3</div>
-          <div>把 Secret Key 填入下方，点「初始化云端」，完成！</div>
+          <div>复制生成的 Token（只显示一次！），填入下方，点「保存设置」</div>
         </div>
       </div>
     </div>
 
     <div class="card" style="margin-bottom:14px">
-      <div class="card-title">第二步：填入 API Key</div>
+      <div class="card-title">填入设置</div>
       <div class="form-grid" style="margin-bottom:14px">
         <div class="field" style="grid-column:1/-1">
-          <label>JSONBin Master Key</label>
-          <input type="password" id="jbKey" placeholder="$2b$10$…" oninput="saveJbKey()"
+          <label>GitHub Personal Access Token</label>
+          <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx" oninput="saveGhConfig()"
             style="font-family:'DM Mono',monospace;font-size:12px"/>
         </div>
-        <div class="field" style="grid-column:1/-1">
-          <label>Bin ID（初始化后自动填入）</label>
-          <input type="text" id="jbBin" placeholder="填入 Bin ID，如 6a0ff737ee5a733b12fdc8ac"
-            style="font-family:'DM Mono',monospace;font-size:12px" oninput="saveJbBin()"/>
+        <div class="field">
+          <label>GitHub 用户名</label>
+          <input type="text" id="ghUser" placeholder="fhebeozy-cpu" oninput="saveGhConfig()"/>
+        </div>
+        <div class="field">
+          <label>Repository 名称（你放 Mard 数据的 repo）</label>
+          <input type="text" id="ghRepo" placeholder="mard-beads" oninput="saveGhConfig()"/>
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="cloudInit()" id="initBtn">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-          初始化云端（首次使用）
+        <button class="btn btn-primary" onclick="ghSaveAndPush()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
+          保存设置
         </button>
-        <button class="btn btn-ghost" onclick="cloudPush()">
+        <button class="btn btn-ghost" onclick="ghPush()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16,17 21,12 16,7"/><path d="M21 12H9"/></svg>
-          推送到云端
+          推送到 GitHub
         </button>
-        <button class="btn btn-ghost" onclick="cloudPull()">
+        <button class="btn btn-ghost" onclick="ghPull()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8,17 3,12 8,7"/><path d="M3 12h18"/></svg>
-          从云端拉取
+          从 GitHub 拉取
         </button>
       </div>
       <div id="cloudMsg" style="margin-top:12px;font-size:13px;display:none"></div>
     </div>
 
     <div class="card">
-      <div class="card-title">使用方式</div>
+      <div class="card-title">说明</div>
       <div style="font-size:13px;color:var(--ink2);line-height:2">
-        <div>• <strong>打开网站时自动从云端拉取</strong>，无需手动操作</div>
-        <div>• 每次新增进货或分装后<strong>自动推送到云端</strong></div>
-        <div>• 左下角状态：<span style="color:#4CAF7A">● 已同步</span> = 正常，<span style="color:#E05555">● 同步失败</span> = 检查网络或 Key</div>
-        <div>• 第一次换新设备：填同一个 API Key 和 Bin ID → 会自动拉取</div>
-        <div>• <strong>Bin ID 要记下来</strong>，新设备需要填这个 ID</div>
-        <div style="margin-top:8px;padding:10px 12px;background:var(--amber-bg);border-radius:var(--rs);color:var(--amber);font-size:12px">
-          ! 免费版每月 10,000 次请求，日常使用完全足够
-        </div>
+        <div>• 数据以 <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px">mard-data.json</code> 文件存在你的 GitHub repo 里</div>
+        <div>• 每次修改后自动推送，打开页面自动拉取</div>
+        <div>• GitHub API 完全免费，每小时 5000 次请求，不会有限制问题</div>
+        <div>• Token 只存在本机 localStorage，不会上传到任何服务器</div>
       </div>
     </div>
   </div>
 
-  <!-- SYNC -->
+    <!-- SYNC -->
   <div id="page-sync" class="page">
     <div class="page-hd">
       <div class="page-title">备份与恢复</div>
@@ -1456,27 +1455,28 @@ function doImport(data,msg){
 }
 
 
-// ── JSONBin 云端同步 ──
-const SKJBKEY='mb_jbkey', SKJBBIN='mb_jbbin';
-let jbKey='', jbBin='';
+// ── GitHub 云端同步 ──
+const SKGH='mb_gh';
+let ghToken='', ghUser='', ghRepo='', _ghSha='';
 
-function saveJbKey(){
-  jbKey=document.getElementById('jbKey').value.trim();
-  localStorage.setItem(SKJBKEY,jbKey);
+function saveGhConfig(){
+  ghToken=document.getElementById('ghToken')?.value.trim()||'';
+  ghUser=document.getElementById('ghUser')?.value.trim()||'';
+  ghRepo=document.getElementById('ghRepo')?.value.trim()||'';
+  localStorage.setItem(SKGH,JSON.stringify({ghToken,ghUser,ghRepo}));
 }
 
-function saveJbBin(){
-  jbBin=document.getElementById('jbBin').value.trim();
-  localStorage.setItem(SKJBBIN,jbBin);
-}
-
-function loadJbConfig(){
-  jbKey=localStorage.getItem(SKJBKEY)||'';
-  jbBin=localStorage.getItem(SKJBBIN)||'';
-  const keyEl=document.getElementById('jbKey');
-  const binEl=document.getElementById('jbBin');
-  if(keyEl&&jbKey)keyEl.value=jbKey;
-  if(binEl&&jbBin)binEl.value=jbBin;
+function loadGhConfig(){
+  try{
+    const d=JSON.parse(localStorage.getItem(SKGH)||'{}');
+    ghToken=d.ghToken||''; ghUser=d.ghUser||''; ghRepo=d.ghRepo||'';
+  }catch(e){}
+  const t=document.getElementById('ghToken');
+  const u=document.getElementById('ghUser');
+  const r=document.getElementById('ghRepo');
+  if(t&&ghToken)t.value=ghToken;
+  if(u&&ghUser)u.value=ghUser;
+  if(r&&ghRepo)r.value=ghRepo;
 }
 
 function cloudMsg(msg,ok){
@@ -1488,88 +1488,83 @@ function cloudMsg(msg,ok){
 }
 
 function getPayload(){
-  return {orders,sellers,usage,meta:{noid,nsid,nuid},exportedAt:new Date().toISOString()};
+  return {orders,sellers,usage,wishlist,meta:{noid,nsid,nuid,nwid},exportedAt:new Date().toISOString()};
 }
 
-async function cloudInit(){
-  jbKey=document.getElementById('jbKey').value.trim();
-  if(!jbKey){alert('请先填入 JSONBin Secret Key');return;}
-  cloudMsg('正在初始化…',true);
-  try{
-    const r=await fetch('https://api.jsonbin.io/v3/b',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','X-Master-Key':jbKey,'X-Bin-Name':'MardBeads','X-Bin-Private':'false'},
-      body:JSON.stringify(getPayload())
-    });
-    if(!r.ok)throw new Error('HTTP '+r.status+' — 请检查 API Key 是否正确');
-    const data=await r.json();
-    jbBin=data.metadata.id;
-    localStorage.setItem(SKJBKEY,jbKey);
-    localStorage.setItem(SKJBBIN,jbBin);
-    document.getElementById('jbBin').value=jbBin;
-    cloudMsg(`✓ 初始化成功！<br>Bin ID：<strong>${jbBin}</strong><br>请把这个 ID 记下来，手机也需要填`,true);
-  }catch(e){
-    cloudMsg('✗ 初始化失败：'+e.message,false);
-  }
+async function ghSaveAndPush(){
+  saveGhConfig();
+  if(!ghToken||!ghUser||!ghRepo){alert('请填写所有设置');return;}
+  await ghPush();
 }
 
-async function cloudPush(){
-  if(!jbKey||!jbBin)return;
+async function ghPush(){
+  if(!ghToken||!ghUser||!ghRepo)return;
   setSyncDot('syncing');
-  const msgEl=document.getElementById('cloudMsg');
   try{
-    const r=await fetch(`https://api.jsonbin.io/v3/b/${jbBin}`,{
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(getPayload(),null,2))));
+    const url=`https://api.github.com/repos/${ghUser}/${ghRepo}/contents/mard-data.json`;
+    // Get current SHA if file exists
+    let sha='';
+    if(_ghSha){sha=_ghSha;}
+    else{
+      const check=await fetch(url,{headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}});
+      if(check.ok){const d=await check.json();sha=d.sha;_ghSha=sha;}
+    }
+    const body={message:'Update mard data '+new Date().toISOString().slice(0,10),content};
+    if(sha)body.sha=sha;
+    const r=await fetch(url,{
       method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':jbKey},
-      body:JSON.stringify(getPayload())
+      headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body:JSON.stringify(body)
     });
-    if(!r.ok)throw new Error('HTTP '+r.status);
+    if(!r.ok){const e=await r.json();throw new Error(e.message||'HTTP '+r.status);}
+    const d=await r.json();
+    _ghSha=d.content.sha;
     setSyncDot('ok');
-    if(msgEl&&msgEl.style.display!=='none')cloudMsg('✓ 已推送到云端 · '+new Date().toLocaleTimeString('zh-CN'),true);
+    cloudMsg('✓ 已推送到 GitHub · '+new Date().toLocaleTimeString('zh-CN'),true);
   }catch(e){
     setSyncDot('error');
-    if(msgEl&&msgEl.style.display!=='none')cloudMsg('✗ 推送失败：'+e.message,false);
+    cloudMsg('✗ 推送失败：'+e.message,false);
   }
 }
 
-async function cloudPull(){
-  if(!jbKey||!jbBin){alert('请先填入 API Key 和 Bin ID');return;}
+async function ghPull(){
+  if(!ghToken||!ghUser||!ghRepo){alert('请先填写设置');return;}
   setSyncDot('syncing');
   cloudMsg('拉取中…',true);
   try{
-    const r=await fetch(`https://api.jsonbin.io/v3/b/${jbBin}/latest`,{
-      headers:{'X-Master-Key':jbKey}
-    });
+    const url=`https://api.github.com/repos/${ghUser}/${ghRepo}/contents/mard-data.json`;
+    const r=await fetch(url,{headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}});
     if(!r.ok)throw new Error('HTTP '+r.status);
-    const data=await r.json();
-    const d=data.record;
-    if(!d.orders)throw new Error('云端数据格式错误');
-    doImport(d,null);
+    const d=await r.json();
+    _ghSha=d.sha;
+    const text=decodeURIComponent(escape(atob(d.content.split('\n').join(''))));
+    const data=JSON.parse(text);
+    if(!data.orders)throw new Error('数据格式错误');
+    doImport(data,null);
     setSyncDot('ok');
-    cloudMsg(`✓ 已从云端拉取<br>进货：${orders.length} 条 · 分装：${usage.length} 条`,true);
+    cloudMsg('✓ 已从 GitHub 拉取<br>进货：'+orders.length+' 条 · 分装：'+usage.length+' 条',true);
   }catch(e){
     setSyncDot('error');
     cloudMsg('✗ 拉取失败：'+e.message,false);
   }
 }
 
-// 自动推送（每次保存时）
 let _pushTimer=null;
 function autoCloudPush(){
-  if(!jbKey||!jbBin)return;
-  // debounce: wait 1.5s after last change before pushing
+  if(!ghToken||!ghUser||!ghRepo)return;
   clearTimeout(_pushTimer);
-  _pushTimer=setTimeout(()=>cloudPush(),1500);
+  _pushTimer=setTimeout(()=>ghPush(),1500);
 }
 
 function setSyncDot(state){
   const el=document.getElementById('syncDot');
   if(!el)return;
   const map={
-    idle:    ['rgba(255,255,255,0.25)','● 本地'],
-    syncing: ['#D4A017',              '↻ 同步中…'],
-    ok:      ['#4CAF7A',              '● 已同步'],
-    error:   ['#E05555',              '● 同步失败'],
+    idle:['rgba(255,255,255,0.25)','● 本地'],
+    syncing:['#D4A017','↻ 同步中…'],
+    ok:['#4CAF7A','● 已同步'],
+    error:['#E05555','● 同步失败'],
   };
   const [color,label]=map[state]||map.idle;
   el.style.color=color;
@@ -1577,28 +1572,31 @@ function setSyncDot(state){
 }
 
 async function autoCloudPull(){
-  if(!jbKey||!jbBin)return;
+  if(!ghToken||!ghUser||!ghRepo)return;
   setSyncDot('syncing');
   try{
-    const r=await fetch(`https://api.jsonbin.io/v3/b/${jbBin}/latest`,{
-      headers:{'X-Master-Key':jbKey}
-    });
+    const url=`https://api.github.com/repos/${ghUser}/${ghRepo}/contents/mard-data.json`;
+    const r=await fetch(url,{headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}});
     if(!r.ok)throw new Error('HTTP '+r.status);
-    const data=await r.json();
-    const d=data.record;
-    if(!d.orders)throw new Error('no data');
-    // silent import - no confirm
-    orders=d.orders.map(o=>({...o,id:Number(o.id),sid:Number(o.sid),beads:Number(o.beads),grams:Number(o.grams),price:Number(o.price)}));
-    sellers=(d.sellers||[]).map(s=>({...s,id:Number(s.id),bpp:Number(s.bpp)||1000}));
-    usage=(d.usage||[]).map(u=>({...u,id:Number(u.id),beads:Number(u.beads)}));
-    noid=d.meta?.noid||(orders.length?Math.max(...orders.map(o=>o.id))+1:1);
-    nsid=d.meta?.nsid||(sellers.length?Math.max(...sellers.map(s=>s.id))+1:1);
-    nuid=d.meta?.nuid||(usage.length?Math.max(...usage.map(u=>u.id))+1:1);
+    const d=await r.json();
+    _ghSha=d.sha;
+    const text=decodeURIComponent(escape(atob(d.content.split('\n').join(''))));
+    const data=JSON.parse(text);
+    if(!data.orders)throw new Error('no data');
+    orders=data.orders.map(o=>({...o,id:Number(o.id),sid:Number(o.sid),beads:Number(o.beads),grams:Number(o.grams),price:Number(o.price)}));
+    sellers=(data.sellers||[]).map(s=>({...s,id:Number(s.id),bpp:Number(s.bpp)||1000}));
+    usage=(data.usage||[]).map(u=>({...u,id:Number(u.id),beads:Number(u.beads)}));
+    wishlist=(data.wishlist||[]).map(w=>({...w,id:Number(w.id)}));
+    noid=data.meta?.noid||(orders.length?Math.max(...orders.map(o=>o.id))+1:1);
+    nsid=data.meta?.nsid||(sellers.length?Math.max(...sellers.map(s=>s.id))+1:1);
+    nuid=data.meta?.nuid||(usage.length?Math.max(...usage.map(u=>u.id))+1:1);
+    nwid=data.meta?.nwid||(wishlist.length?Math.max(...wishlist.map(w=>w.id))+1:1);
     localStorage.setItem(SKO,JSON.stringify({o:orders,n:noid}));
     localStorage.setItem(SKS,JSON.stringify({s:sellers,n:nsid}));
     localStorage.setItem(SKU,JSON.stringify({u:usage,n:nuid}));
+    localStorage.setItem(SKW,JSON.stringify({w:wishlist,n:nwid}));
     refreshSellers();renderStats();renderOrders();renderInventory();
-    renderSellerList();renderUsageStats();renderUsageList();
+    renderSellerList();renderUsageStats();renderUsageList();renderWishlist();renderWishStats();
     rows=[];addRow();uRows=[];addURow();
     setSyncDot('ok');
   }catch(e){
@@ -1616,7 +1614,7 @@ function showPage(name,btn){
   if(name==='inventory'){const lt=document.getElementById('lowThreshold');if(lt)lt.value=lowThreshold;renderInventory();}
   if(name==='sellers')renderSellerList();
   if(name==='usage'){renderUsageStats();renderUsageList();renderURows();}
-  if(name==='cloud'){loadJbConfig();const m=document.getElementById('cloudMsg');if(m)m.style.display='none';}
+  if(name==='cloud'){loadGhConfig();const m=document.getElementById('cloudMsg');if(m)m.style.display='none';}
   if(name==='wishlist'){renderWishlist();renderWishStats();}
   if(name==='sync'){
     const el=document.getElementById('exportInfo');
@@ -1627,15 +1625,14 @@ function showPage(name,btn){
 }
 
 load();
-loadJbConfig();
+loadGhConfig();
 // Auto pull on startup if credentials exist
-if(jbKey&&jbBin){
+if(ghToken&&ghUser&&ghRepo){
   autoCloudPull();
 } else {
-  // Show prompt in sync dot if no credentials
   setTimeout(()=>{
     const el=document.getElementById('syncDot');
-    if(el&&!jbKey)el.textContent='● 未连接云端';
+    if(el&&!ghToken)el.textContent='● 未连接云端';
   },100);
 }
 </script>
