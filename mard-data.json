@@ -319,12 +319,21 @@
       "date": "2026-05-20"
     }
   ],
-  "wishlist": [],
+  "wishlist": [
+    {
+      "id": 2,
+      "code": "G2",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-30"
+    }
+  ],
   "meta": {
     "noid": 21,
     "nsid": 3,
     "nuid": 9,
-    "nwid": 2
+    "nwid": 3
   },
-  "exportedAt": "2026-05-30T23:12:25.320Z"
+  "exportedAt": "2026-05-30T23:12:38.925Z"
 }
