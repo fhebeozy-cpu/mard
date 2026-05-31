@@ -327,13 +327,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-05-30"
+    },
+    {
+      "id": 3,
+      "code": "F9",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
     }
   ],
   "meta": {
     "noid": 21,
     "nsid": 3,
     "nuid": 9,
-    "nwid": 3
+    "nwid": 4
   },
-  "exportedAt": "2026-05-30T23:12:38.925Z"
+  "exportedAt": "2026-05-31T00:23:17.435Z"
 }
