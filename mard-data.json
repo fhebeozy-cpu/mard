@@ -335,13 +335,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-05-31"
+    },
+    {
+      "id": 4,
+      "code": "B11",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
     }
   ],
   "meta": {
     "noid": 21,
     "nsid": 3,
     "nuid": 9,
-    "nwid": 4
+    "nwid": 5
   },
-  "exportedAt": "2026-05-31T00:23:17.435Z"
+  "exportedAt": "2026-05-31T00:23:33.450Z"
 }
