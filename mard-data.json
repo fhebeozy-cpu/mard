@@ -351,13 +351,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-05-31"
+    },
+    {
+      "id": 7,
+      "code": "F17",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
     }
   ],
   "meta": {
     "noid": 21,
     "nsid": 3,
     "nuid": 9,
-    "nwid": 7
+    "nwid": 8
   },
-  "exportedAt": "2026-05-31T00:24:05.513Z"
+  "exportedAt": "2026-05-31T00:24:17.166Z"
 }
