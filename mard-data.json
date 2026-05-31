@@ -1,6 +1,19 @@
 {
   "orders": [
     {
+      "id": 22,
+      "code": "F9",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 6000,
+      "grams": 60,
+      "price": 0,
+      "status": "pending",
+      "note": "",
+      "date": "2026-05-31"
+    },
+    {
       "id": 21,
       "code": "G2",
       "sid": 1,
@@ -383,10 +396,10 @@
     }
   ],
   "meta": {
-    "noid": 22,
+    "noid": 23,
     "nsid": 3,
     "nuid": 9,
     "nwid": 9
   },
-  "exportedAt": "2026-05-31T00:29:46.295Z"
+  "exportedAt": "2026-05-31T00:30:13.062Z"
 }
