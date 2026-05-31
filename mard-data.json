@@ -359,13 +359,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-05-31"
+    },
+    {
+      "id": 8,
+      "code": "F14",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
     }
   ],
   "meta": {
     "noid": 21,
     "nsid": 3,
     "nuid": 9,
-    "nwid": 8
+    "nwid": 9
   },
-  "exportedAt": "2026-05-31T00:24:17.166Z"
+  "exportedAt": "2026-05-31T00:24:27.476Z"
 }
