@@ -469,13 +469,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-01"
+    },
+    {
+      "id": 13,
+      "code": "F7",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-01"
     }
   ],
   "meta": {
     "noid": 27,
     "nsid": 3,
     "nuid": 9,
-    "nwid": 13
+    "nwid": 14
   },
-  "exportedAt": "2026-06-01T11:57:52.230Z"
+  "exportedAt": "2026-06-01T11:57:58.479Z"
 }
