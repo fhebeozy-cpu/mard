@@ -453,13 +453,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-01"
+    },
+    {
+      "id": 11,
+      "code": "F4",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-01"
     }
   ],
   "meta": {
     "noid": 27,
     "nsid": 3,
     "nuid": 9,
-    "nwid": 11
+    "nwid": 12
   },
-  "exportedAt": "2026-06-01T11:57:24.143Z"
+  "exportedAt": "2026-06-01T11:57:41.645Z"
 }
