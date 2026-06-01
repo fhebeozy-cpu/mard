@@ -445,13 +445,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-05-31"
+    },
+    {
+      "id": 10,
+      "code": "H12",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-01"
     }
   ],
   "meta": {
     "noid": 27,
     "nsid": 3,
     "nuid": 9,
-    "nwid": 10
+    "nwid": 11
   },
-  "exportedAt": "2026-06-01T11:57:17.607Z"
+  "exportedAt": "2026-06-01T11:57:24.143Z"
 }
