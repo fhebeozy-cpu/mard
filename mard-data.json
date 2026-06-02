@@ -483,13 +483,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-01"
+    },
+    {
+      "id": 14,
+      "code": "M11",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-02"
     }
   ],
   "meta": {
     "noid": 27,
     "nsid": 3,
     "nuid": 10,
-    "nwid": 14
+    "nwid": 15
   },
-  "exportedAt": "2026-06-02T13:20:53.456Z"
+  "exportedAt": "2026-06-02T14:52:03.391Z"
 }
