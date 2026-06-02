@@ -483,13 +483,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-01"
+    },
+    {
+      "id": 15,
+      "code": "E12",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-02"
     }
   ],
   "meta": {
     "noid": 27,
     "nsid": 3,
     "nuid": 10,
-    "nwid": 15
+    "nwid": 16
   },
-  "exportedAt": "2026-06-02T14:52:10.841Z"
+  "exportedAt": "2026-06-02T14:52:36.824Z"
 }
