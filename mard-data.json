@@ -491,13 +491,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-02"
+    },
+    {
+      "id": 16,
+      "code": "H4",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-02"
     }
   ],
   "meta": {
     "noid": 27,
     "nsid": 3,
     "nuid": 10,
-    "nwid": 16
+    "nwid": 17
   },
-  "exportedAt": "2026-06-02T14:52:36.824Z"
+  "exportedAt": "2026-06-02T14:52:51.740Z"
 }
