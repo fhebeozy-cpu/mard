@@ -79,19 +79,6 @@
       "date": "2026-05-31"
     },
     {
-      "id": 29,
-      "code": "B11",
-      "sid": 1,
-      "sellerName": "小红书Boss",
-      "platform": "小红书",
-      "beads": 2000,
-      "grams": 20,
-      "price": 1.2,
-      "status": "pending",
-      "note": "来自补货愿望单",
-      "date": "2026-06-03"
-    },
-    {
       "id": 19,
       "code": "H3",
       "sid": 1,
@@ -430,5 +417,5 @@
     "nuid": 10,
     "nwid": 14
   },
-  "exportedAt": "2026-06-03T03:00:59.975Z"
+  "exportedAt": "2026-06-03T03:01:06.130Z"
 }
