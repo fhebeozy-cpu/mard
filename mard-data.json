@@ -1,6 +1,19 @@
 {
   "orders": [
     {
+      "id": 32,
+      "code": "F14",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 2000,
+      "grams": 20,
+      "price": 1.2,
+      "status": "pending",
+      "note": "来自补货愿望单",
+      "date": "2026-05-31"
+    },
+    {
       "id": 31,
       "code": "F17",
       "sid": 1,
@@ -470,21 +483,6 @@
   ],
   "wishlist": [
     {
-      "id": 8,
-      "code": "F14",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-05-31",
-      "restocks": [
-        {
-          "date": "2026-06-01",
-          "amount": 2000,
-          "unit": "颗"
-        }
-      ]
-    },
-    {
       "id": 10,
       "code": "H12",
       "amount": 2000,
@@ -550,10 +548,10 @@
     }
   ],
   "meta": {
-    "noid": 32,
+    "noid": 33,
     "nsid": 3,
     "nuid": 10,
     "nwid": 20
   },
-  "exportedAt": "2026-06-03T02:51:28.075Z"
+  "exportedAt": "2026-06-03T02:51:37.269Z"
 }
