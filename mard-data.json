@@ -1,81 +1,81 @@
 {
   "orders": [
     {
-      "id": 32,
-      "code": "F14",
-      "sid": 1,
-      "sellerName": "小红书Boss",
-      "platform": "小红书",
-      "beads": 2000,
-      "grams": 20,
-      "price": 1.2,
-      "status": "pending",
-      "note": "来自补货愿望单",
-      "date": "2026-05-31"
-    },
-    {
-      "id": 31,
-      "code": "F17",
-      "sid": 1,
-      "sellerName": "小红书Boss",
-      "platform": "小红书",
-      "beads": 2000,
-      "grams": 20,
-      "price": 1.2,
-      "status": "pending",
-      "note": "来自补货愿望单",
-      "date": "2026-05-31"
-    },
-    {
-      "id": 30,
-      "code": "F11",
-      "sid": 1,
-      "sellerName": "小红书Boss",
-      "platform": "小红书",
-      "beads": 2000,
-      "grams": 20,
-      "price": 1.2,
-      "status": "pending",
-      "note": "来自补货愿望单",
-      "date": "2026-05-31"
-    },
-    {
-      "id": 29,
+      "id": 26,
       "code": "B11",
       "sid": 1,
       "sellerName": "小红书Boss",
       "platform": "小红书",
       "beads": 2000,
       "grams": 20,
-      "price": 1.2,
+      "price": 0,
       "status": "pending",
-      "note": "来自补货愿望单",
-      "date": "2026-06-03"
+      "note": "",
+      "date": "2026-05-31"
     },
     {
-      "id": 28,
+      "id": 25,
+      "code": "F17",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 2000,
+      "grams": 20,
+      "price": 0,
+      "status": "pending",
+      "note": "",
+      "date": "2026-05-31"
+    },
+    {
+      "id": 24,
+      "code": "F14",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 2000,
+      "grams": 20,
+      "price": 0,
+      "status": "pending",
+      "note": "",
+      "date": "2026-05-31"
+    },
+    {
+      "id": 23,
+      "code": "F11",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 2000,
+      "grams": 20,
+      "price": 0,
+      "status": "pending",
+      "note": "",
+      "date": "2026-05-31"
+    },
+    {
+      "id": 22,
       "code": "F9",
       "sid": 1,
       "sellerName": "小红书Boss",
       "platform": "小红书",
       "beads": 6000,
       "grams": 60,
-      "price": 1.2,
+      "price": 0,
       "status": "pending",
-      "note": "来自补货愿望单",
+      "note": "",
       "date": "2026-05-31"
     },
     {
-      "id": 27,
+      "id": 21,
       "code": "G2",
       "sid": 1,
       "sellerName": "小红书Boss",
       "platform": "小红书",
       "beads": 2000,
       "grams": 20,
-      "price": 1.2,
+      "price": 0,
       "status": "pending",
-      "note": "来自补货愿望单",
+      "note": "",
       "date": "2026-05-31"
     },
     {
@@ -405,6 +405,54 @@
   ],
   "wishlist": [
     {
+      "id": 2,
+      "code": "G2",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-30"
+    },
+    {
+      "id": 3,
+      "code": "F9",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
+    },
+    {
+      "id": 4,
+      "code": "B11",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
+    },
+    {
+      "id": 6,
+      "code": "F11",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
+    },
+    {
+      "id": 7,
+      "code": "F17",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
+    },
+    {
+      "id": 8,
+      "code": "F14",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
+    },
+    {
       "id": 10,
       "code": "H12",
       "amount": 2000,
@@ -435,45 +483,13 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-01"
-    },
-    {
-      "id": 15,
-      "code": "E12",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-02"
-    },
-    {
-      "id": 17,
-      "code": "G12",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-02"
-    },
-    {
-      "id": 18,
-      "code": "D11",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-02"
-    },
-    {
-      "id": 19,
-      "code": "E14",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-02"
     }
   ],
   "meta": {
-    "noid": 33,
+    "noid": 27,
     "nsid": 3,
     "nuid": 10,
-    "nwid": 20
+    "nwid": 14
   },
-  "exportedAt": "2026-06-03T02:52:44.977Z"
+  "exportedAt": "2026-06-03T02:54:56.966Z"
 }
