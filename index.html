@@ -430,7 +430,7 @@ tr:hover td{background:var(--surface2)}
   <div id="page-wishlist" class="page">
     <div class="page-hd">
       <div class="page-title">补货愿望单</div>
-      <div class="page-sub">记录想买但还没下单的色号，下单后移到「新增进货」</div>
+      <div class="page-sub">记录想买的色号，点「未补货」可记录补货日期和数量</div>
     </div>
 
     <div class="stat-row" id="wishStatsRow"></div>
@@ -461,7 +461,7 @@ tr:hover td{background:var(--surface2)}
         </div>
         <div class="field">
           <label>备注</label>
-          <input type="text" id="w-note" placeholder="可选，如：颜色不够用"
+          <input type="text" id="w-note" placeholder="可选"
             style="height:36px;font-size:13px;padding:0 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--ink);outline:none;width:100%"
             onkeydown="if(event.key==='Enter'){event.preventDefault();addWish()}"/>
         </div>
@@ -473,6 +473,38 @@ tr:hover td{background:var(--surface2)}
 
     <!-- Wishlist items -->
     <div id="wishList"></div>
+
+    <!-- Restock modal -->
+    <div id="restockModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:999;display:none;align-items:center;justify-content:center">
+      <div style="background:var(--surface);border-radius:var(--r);padding:24px;width:90%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.15)">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+          <div id="restockDot" style="width:18px;height:18px;border-radius:50%;flex-shrink:0"></div>
+          <span id="restockTitle">记录补货</span>
+        </div>
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="field">
+            <label>补货日期</label>
+            <input type="date" id="restockDate"/>
+          </div>
+          <div class="field">
+            <label>数量</label>
+            <input type="number" id="restockAmount" min="0" step="0.1" placeholder="如 2"/>
+          </div>
+          <div class="field">
+            <label>单位</label>
+            <select id="restockUnit">
+              <option value="包">包</option>
+              <option value="克">克 (g)</option>
+              <option value="颗">颗</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="confirmRestock()">确认补货</button>
+          <button class="btn btn-ghost" onclick="closeRestockModal()">取消</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- CLOUD -->
@@ -900,8 +932,44 @@ function addWish(){
 }
 
 function removeWish(id){
+  if(!confirm('确定删除这个色号？'))return;
   wishlist=wishlist.filter(w=>w.id!==id);
   saveWishlist();renderWishlist();renderWishStats();
+}
+
+let restockingId=null;
+function openRestockModal(id){
+  const w=wishlist.find(x=>x.id===id);if(!w)return;
+  restockingId=id;
+  const hex=CM[w.code]||'#ddd';
+  document.getElementById('restockDot').style.background=hex;
+  document.getElementById('restockTitle').textContent='记录补货 · '+w.code;
+  document.getElementById('restockDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('restockAmount').value=w.amount||'';
+  document.getElementById('restockUnit').value=w.unit||'包';
+  const modal=document.getElementById('restockModal');
+  modal.style.display='flex';
+}
+function closeRestockModal(){
+  document.getElementById('restockModal').style.display='none';
+  restockingId=null;
+}
+function confirmRestock(){
+  if(!restockingId)return;
+  const w=wishlist.find(x=>x.id===restockingId);if(!w)return;
+  const date=document.getElementById('restockDate').value;
+  const amount=parseFloat(document.getElementById('restockAmount').value)||0;
+  const unit=document.getElementById('restockUnit').value;
+  if(!date||!amount){alert('请填写日期和数量');return;}
+  if(!w.restocks)w.restocks=[];
+  w.restocks.push({date,amount,unit});
+  closeRestockModal();
+  saveWishlist();renderWishlist();renderWishStats();
+}
+function removeRestock(wishId,idx){
+  const w=wishlist.find(x=>x.id===wishId);if(!w||!w.restocks)return;
+  w.restocks.splice(idx,1);
+  saveWishlist();renderWishlist();
 }
 
 function moveToOrder(id){
@@ -930,8 +998,12 @@ function moveToOrder(id){
 function renderWishStats(){
   const el=document.getElementById('wishStatsRow');
   if(!el)return;
+  const never=wishlist.filter(w=>!w.restocks||w.restocks.length===0).length;
+  const restocked=wishlist.filter(w=>w.restocks&&w.restocks.length>0).length;
   el.innerHTML=`
-    <div class="stat-card"><div class="sn">${wishlist.length}</div><div class="sl">想补色号数</div></div>`;
+    <div class="stat-card"><div class="sn">${wishlist.length}</div><div class="sl">愿望单色号</div></div>
+    <div class="stat-card"><div class="sn a">${never}</div><div class="sl">未补货</div></div>
+    <div class="stat-card"><div class="sn g">${restocked}</div><div class="sl">已有补货记录</div></div>`;
 }
 
 function renderWishlist(){
@@ -943,32 +1015,55 @@ function renderWishlist(){
   }
   wrap.innerHTML=wishlist.map(w=>{
     const hex=CM[w.code]||'#ddd';
-    // Check current stock
     const arrived=orders.filter(o=>o.status==='arrived'&&o.code===w.code).reduce((a,o)=>a+o.beads,0);
     const used=usage.filter(u=>u.code===w.code).reduce((a,u)=>a+u.beads,0);
     const pending=orders.filter(o=>o.status==='pending'&&o.code===w.code).reduce((a,o)=>a+o.beads,0);
     const remain=Math.max(0,arrived-used);
-    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <div style="width:28px;height:28px;border-radius:50%;background:${hex};border:2px solid rgba(0,0,0,0.1);flex-shrink:0"></div>
-      <div style="flex:1;min-width:0">
-        <div style="font-family:'DM Mono',monospace;font-size:15px;font-weight:700;color:var(--ink)">${w.code}</div>
-        <div style="font-size:11px;color:var(--ink3);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap">
-          ${w.amount?`<span>预计：${w.amount} ${w.unit}</span>`:''}
-          ${remain>0?`<span style="color:var(--green)">库存 ${remain.toLocaleString()}颗</span>`:'<span style="color:var(--ink3)">无库存</span>'}
-          ${pending>0?`<span style="color:var(--amber)">待到货 ${pending.toLocaleString()}颗</span>`:''}
-          ${w.note?`<span style="color:var(--ink3)">${w.note}</span>`:''}
-          <span style="color:var(--ink3)">${w.addedAt}</span>
+    const restocks=w.restocks||[];
+    // Restock history rows
+    const historyHtml=restocks.length?`
+      <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;display:flex;flex-direction:column;gap:4px">
+        ${restocks.map((r,i)=>`
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px">
+            <span style="color:var(--green);font-weight:600">✓ 已补货</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--ink2)">${r.date}</span>
+            <span style="color:var(--ink2)">${r.amount} ${r.unit}</span>
+            <button onclick="removeRestock(${w.id},${i})" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:12px;padding:0;margin-left:auto" title="删除此记录">×</button>
+          </div>`).join('')}
+      </div>`:'';
+    const neverRestocked=restocks.length===0;
+    const lastRestock=restocks.length?restocks[restocks.length-1]:null;
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="width:28px;height:28px;border-radius:50%;background:${hex};border:2px solid rgba(0,0,0,0.1);flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:'DM Mono',monospace;font-size:15px;font-weight:700;color:var(--ink)">${w.code}</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            ${w.amount?`<span>预计：${w.amount} ${w.unit}</span>`:''}
+            ${remain>0?`<span style="color:var(--green)">库存 ${remain.toLocaleString()}颗</span>`:''}
+            ${pending>0?`<span style="color:var(--amber)">待到货 ${pending.toLocaleString()}颗</span>`:''}
+            ${w.note?`<span>${w.note}</span>`:''}
+            <span>加入：${w.addedAt}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;align-items:center">
+          <button onclick="openRestockModal(${w.id})"
+            style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1.5px solid;cursor:pointer;
+              ${neverRestocked
+                ?'background:var(--amber-bg);color:var(--amber);border-color:var(--amber)'
+                :'background:var(--green-bg);color:var(--green);border-color:var(--green)'}">
+            ${neverRestocked?'未补货':'+ 补货记录'}
+          </button>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:auto" onclick="moveToOrder(${w.id})">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+            已下单
+          </button>
+          <button class="icon-btn" onclick="removeWish(${w.id})" aria-label="删除">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/></svg>
+          </button>
         </div>
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0">
-        <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:auto" onclick="moveToOrder(${w.id})">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
-          已下单
-        </button>
-        <button class="icon-btn" onclick="removeWish(${w.id})" aria-label="删除">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/></svg>
-        </button>
-      </div>
+      ${historyHtml}
     </div>`;
   }).join('');
 }
