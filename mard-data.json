@@ -1,6 +1,19 @@
 {
   "orders": [
     {
+      "id": 33,
+      "code": "G2",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 2000,
+      "grams": 20,
+      "price": 1.2,
+      "status": "pending",
+      "note": "来自补货愿望单",
+      "date": "2026-05-31"
+    },
+    {
       "id": 32,
       "code": "F14",
       "sid": 1,
@@ -405,14 +418,6 @@
   ],
   "wishlist": [
     {
-      "id": 2,
-      "code": "G2",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-05-30"
-    },
-    {
       "id": 3,
       "code": "F9",
       "amount": 2000,
@@ -486,10 +491,10 @@
     }
   ],
   "meta": {
-    "noid": 33,
+    "noid": 34,
     "nsid": 3,
     "nuid": 10,
     "nwid": 14
   },
-  "exportedAt": "2026-06-03T02:55:00.812Z"
+  "exportedAt": "2026-06-03T02:59:07.689Z"
 }
