@@ -79,19 +79,6 @@
       "date": "2026-05-31"
     },
     {
-      "id": 26,
-      "code": "B11",
-      "sid": 1,
-      "sellerName": "小红书Boss",
-      "platform": "小红书",
-      "beads": 2000,
-      "grams": 20,
-      "price": 0,
-      "status": "pending",
-      "note": "",
-      "date": "2026-05-31"
-    },
-    {
       "id": 20,
       "code": "F9",
       "sid": 1,
@@ -488,5 +475,5 @@
     "nuid": 10,
     "nwid": 20
   },
-  "exportedAt": "2026-06-03T02:52:39.606Z"
+  "exportedAt": "2026-06-03T02:52:44.977Z"
 }
