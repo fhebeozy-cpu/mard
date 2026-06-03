@@ -1585,6 +1585,7 @@ function saveGhConfig(){
   ghToken=document.getElementById('ghToken')?.value.trim()||'';
   ghUser=document.getElementById('ghUser')?.value.trim()||'';
   ghRepo=document.getElementById('ghRepo')?.value.trim()||'';
+  _ghSha=''; // reset SHA when config changes
   localStorage.setItem(SKGH,JSON.stringify({ghToken,ghUser,ghRepo}));
 }
 
@@ -1625,13 +1626,10 @@ async function ghPush(){
   try{
     const content=btoa(unescape(encodeURIComponent(JSON.stringify(getPayload(),null,2))));
     const url=`https://api.github.com/repos/${ghUser}/${ghRepo}/contents/mard-data.json`;
-    // Get current SHA if file exists
+    // Always fetch latest SHA before pushing to avoid mismatch
     let sha='';
-    if(_ghSha){sha=_ghSha;}
-    else{
-      const check=await fetch(url,{headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}});
-      if(check.ok){const d=await check.json();sha=d.sha;_ghSha=sha;}
-    }
+    const check=await fetch(url,{headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}});
+    if(check.ok){const d=await check.json();sha=d.sha;}
     const body={message:'Update mard data '+new Date().toISOString().slice(0,10),content};
     if(sha)body.sha=sha;
     const r=await fetch(url,{
