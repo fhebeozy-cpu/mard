@@ -430,7 +430,7 @@ tr:hover td{background:var(--surface2)}
   <div id="page-wishlist" class="page">
     <div class="page-hd">
       <div class="page-title">补货愿望单</div>
-      <div class="page-sub">记录想买的色号，点「未补货」可记录补货日期和数量</div>
+      <div class="page-sub">记录想买的色号，点「未补货」填好资料后自动移除并加入进货记录</div>
     </div>
 
     <div class="stat-row" id="wishStatsRow"></div>
@@ -483,8 +483,12 @@ tr:hover td{background:var(--surface2)}
         </div>
         <div class="form-grid" style="margin-bottom:16px">
           <div class="field">
-            <label>补货日期</label>
+            <label>日期</label>
             <input type="date" id="restockDate"/>
+          </div>
+          <div class="field">
+            <label>卖家</label>
+            <select id="restockSeller"></select>
           </div>
           <div class="field">
             <label>数量</label>
@@ -493,14 +497,28 @@ tr:hover td{background:var(--surface2)}
           <div class="field">
             <label>单位</label>
             <select id="restockUnit">
-              <option value="包">包</option>
-              <option value="克">克 (g)</option>
-              <option value="颗">颗</option>
+              <option value="packs">包</option>
+              <option value="grams">克 (g)</option>
+              <option value="beads">颗</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>单价 (¥)</label>
+            <input type="number" id="restockPrice" min="0" step="0.01" placeholder="0.00"/>
+          </div>
+          <div class="field">
+            <label>状态</label>
+            <select id="restockStatus">
+              <option value="pending">待到货</option>
+              <option value="arrived">已到货</option>
             </select>
           </div>
         </div>
         <div class="btn-row">
-          <button class="btn btn-primary" onclick="confirmRestock()">确认补货</button>
+          <button class="btn btn-primary" onclick="confirmRestock()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+            确认补货并移除
+          </button>
           <button class="btn btn-ghost" onclick="closeRestockModal()">取消</button>
         </div>
       </div>
@@ -946,7 +964,14 @@ function openRestockModal(id){
   document.getElementById('restockTitle').textContent='记录补货 · '+w.code;
   document.getElementById('restockDate').value=new Date().toISOString().slice(0,10);
   document.getElementById('restockAmount').value=w.amount||'';
-  document.getElementById('restockUnit').value=w.unit||'包';
+  // Map unit to select value
+  const unitMap={'包':'packs','克':'grams','克 (g)':'grams','颗':'beads'};
+  document.getElementById('restockUnit').value=unitMap[w.unit]||'packs';
+  document.getElementById('restockPrice').value='';
+  document.getElementById('restockStatus').value='pending';
+  // Populate seller select
+  const sel=document.getElementById('restockSeller');
+  sel.innerHTML=sellers.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
   const modal=document.getElementById('restockModal');
   modal.style.display='flex';
 }
@@ -960,11 +985,21 @@ function confirmRestock(){
   const date=document.getElementById('restockDate').value;
   const amount=parseFloat(document.getElementById('restockAmount').value)||0;
   const unit=document.getElementById('restockUnit').value;
+  const price=parseFloat(document.getElementById('restockPrice').value)||0;
+  const status=document.getElementById('restockStatus').value;
+  const sid=parseInt(document.getElementById('restockSeller').value);
   if(!date||!amount){alert('请填写日期和数量');return;}
-  if(!w.restocks)w.restocks=[];
-  w.restocks.push({date,amount,unit});
+  // Add to orders
+  const seller=sellers.find(s=>s.id===sid);
+  const beads=toBeads(amount,unit,sid);
+  const grams=toGrams(beads);
+  orders.unshift({id:noid++,code:w.code,sid,sellerName:seller?.name||'?',platform:seller?.platform||'',beads,grams,price,status,note:'来自补货愿望单',date});
+  // Remove from wishlist
+  wishlist=wishlist.filter(x=>x.id!==restockingId);
   closeRestockModal();
-  saveWishlist();renderWishlist();renderWishStats();
+  saveOrders();saveWishlist();
+  renderStats();renderOrders();renderInventory();renderWishlist();renderWishStats();
+  alert('✓ 已记录补货并从愿望单移除！');
 }
 function removeRestock(wishId,idx){
   const w=wishlist.find(x=>x.id===wishId);if(!w||!w.restocks)return;
@@ -998,12 +1033,8 @@ function moveToOrder(id){
 function renderWishStats(){
   const el=document.getElementById('wishStatsRow');
   if(!el)return;
-  const never=wishlist.filter(w=>!w.restocks||w.restocks.length===0).length;
-  const restocked=wishlist.filter(w=>w.restocks&&w.restocks.length>0).length;
   el.innerHTML=`
-    <div class="stat-card"><div class="sn">${wishlist.length}</div><div class="sl">愿望单色号</div></div>
-    <div class="stat-card"><div class="sn a">${never}</div><div class="sl">未补货</div></div>
-    <div class="stat-card"><div class="sn g">${restocked}</div><div class="sl">已有补货记录</div></div>`;
+    <div class="stat-card"><div class="sn a">${wishlist.length}</div><div class="sl">待补货色号</div></div>`;
 }
 
 function renderWishlist(){
@@ -1048,11 +1079,8 @@ function renderWishlist(){
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;align-items:center">
           <button onclick="openRestockModal(${w.id})"
-            style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1.5px solid;cursor:pointer;
-              ${neverRestocked
-                ?'background:var(--amber-bg);color:var(--amber);border-color:var(--amber)'
-                :'background:var(--green-bg);color:var(--green);border-color:var(--green)'}">
-            ${neverRestocked?'未补货':'+ 补货记录'}
+            style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;border:1.5px solid;cursor:pointer;background:var(--amber-bg);color:var(--amber);border-color:var(--amber)">
+            未补货
           </button>
           <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:auto" onclick="moveToOrder(${w.id})">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
@@ -1063,7 +1091,6 @@ function renderWishlist(){
           </button>
         </div>
       </div>
-      ${historyHtml}
     </div>`;
   }).join('');
 }
