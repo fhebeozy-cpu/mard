@@ -422,13 +422,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-01"
+    },
+    {
+      "id": 14,
+      "code": "H19",
+      "amount": 3000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-06"
     }
   ],
   "meta": {
     "noid": 41,
     "nsid": 3,
     "nuid": 10,
-    "nwid": 14
+    "nwid": 15
   },
-  "exportedAt": "2026-06-03T03:03:36.095Z"
+  "exportedAt": "2026-06-06T23:34:05.718Z"
 }
