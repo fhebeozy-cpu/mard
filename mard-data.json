@@ -452,13 +452,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-07"
+    },
+    {
+      "id": 18,
+      "code": "G12",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-07"
     }
   ],
   "meta": {
     "noid": 41,
     "nsid": 3,
     "nuid": 11,
-    "nwid": 18
+    "nwid": 19
   },
-  "exportedAt": "2026-06-07T00:44:49.766Z"
+  "exportedAt": "2026-06-07T00:45:02.161Z"
 }
