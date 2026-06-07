@@ -398,6 +398,54 @@
   ],
   "wishlist": [
     {
+      "id": 2,
+      "code": "G2",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-30"
+    },
+    {
+      "id": 3,
+      "code": "F9",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
+    },
+    {
+      "id": 4,
+      "code": "B11",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
+    },
+    {
+      "id": 6,
+      "code": "F11",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
+    },
+    {
+      "id": 7,
+      "code": "F17",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
+    },
+    {
+      "id": 8,
+      "code": "F14",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-05-31"
+    },
+    {
       "id": 10,
       "code": "H12",
       "amount": 2000,
@@ -430,59 +478,43 @@
       "addedAt": "2026-06-01"
     },
     {
-      "id": 14,
-      "code": "H19",
-      "amount": 3000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-06"
-    },
-    {
       "id": 15,
       "code": "E12",
       "amount": 2000,
       "unit": "颗",
       "note": "",
-      "addedAt": "2026-06-07"
+      "addedAt": "2026-06-02"
     },
     {
       "id": 17,
-      "code": "D11",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-07"
-    },
-    {
-      "id": 18,
       "code": "G12",
       "amount": 2000,
       "unit": "颗",
       "note": "",
-      "addedAt": "2026-06-07"
+      "addedAt": "2026-06-02"
     },
     {
-      "id": 19,
-      "code": "D17",
+      "id": 18,
+      "code": "D11",
       "amount": 2000,
       "unit": "颗",
       "note": "",
-      "addedAt": "2026-06-07"
+      "addedAt": "2026-06-02"
     },
     {
-      "id": 20,
+      "id": 19,
       "code": "E14",
       "amount": 2000,
       "unit": "颗",
       "note": "",
-      "addedAt": "2026-06-07"
+      "addedAt": "2026-06-02"
     }
   ],
   "meta": {
     "noid": 41,
     "nsid": 3,
     "nuid": 11,
-    "nwid": 21
+    "nwid": 20
   },
-  "exportedAt": "2026-06-07T00:45:31.480Z"
+  "exportedAt": "2026-06-07T00:46:42.709Z"
 }
