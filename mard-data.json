@@ -444,13 +444,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-07"
+    },
+    {
+      "id": 17,
+      "code": "D11",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-07"
     }
   ],
   "meta": {
     "noid": 41,
     "nsid": 3,
     "nuid": 11,
-    "nwid": 17
+    "nwid": 18
   },
-  "exportedAt": "2026-06-07T00:44:36.025Z"
+  "exportedAt": "2026-06-07T00:44:49.766Z"
 }
