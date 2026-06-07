@@ -460,13 +460,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-07"
+    },
+    {
+      "id": 19,
+      "code": "D17",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-07"
     }
   ],
   "meta": {
     "noid": 41,
     "nsid": 3,
     "nuid": 11,
-    "nwid": 19
+    "nwid": 20
   },
-  "exportedAt": "2026-06-07T00:45:02.161Z"
+  "exportedAt": "2026-06-07T00:45:14.949Z"
 }
