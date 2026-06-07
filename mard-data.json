@@ -468,13 +468,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-07"
+    },
+    {
+      "id": 20,
+      "code": "E14",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-07"
     }
   ],
   "meta": {
     "noid": 41,
     "nsid": 3,
     "nuid": 11,
-    "nwid": 20
+    "nwid": 21
   },
-  "exportedAt": "2026-06-07T00:45:14.949Z"
+  "exportedAt": "2026-06-07T00:45:31.480Z"
 }
