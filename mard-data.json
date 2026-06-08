@@ -1,6 +1,227 @@
 {
   "orders": [
     {
+      "id": 57,
+      "code": "F8",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 2000,
+      "grams": 20,
+      "price": 2.34,
+      "status": "pending",
+      "note": "来自补货愿望单",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 56,
+      "code": "F7",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 2000,
+      "grams": 20,
+      "price": 2.34,
+      "status": "pending",
+      "note": "来自补货愿望单",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 55,
+      "code": "F4",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 2000,
+      "grams": 20,
+      "price": 2.34,
+      "status": "pending",
+      "note": "来自补货愿望单",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 54,
+      "code": "H4",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 3000,
+      "grams": 30,
+      "price": 3.5,
+      "status": "pending",
+      "note": "",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 53,
+      "code": "G2",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 4000,
+      "grams": 40,
+      "price": 4.67,
+      "status": "pending",
+      "note": "来自补货愿望单",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 52,
+      "code": "F17",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 4000,
+      "grams": 40,
+      "price": 4.67,
+      "status": "pending",
+      "note": "",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 51,
+      "code": "F14",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 4000,
+      "grams": 40,
+      "price": 4.67,
+      "status": "pending",
+      "note": "",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 50,
+      "code": "E14",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 5000,
+      "grams": 50,
+      "price": 5.84,
+      "status": "pending",
+      "note": "来自补货愿望单",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 49,
+      "code": "D11",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 5000,
+      "grams": 50,
+      "price": 5.84,
+      "status": "pending",
+      "note": "来自补货愿望单",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 48,
+      "code": "H12",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 5000,
+      "grams": 50,
+      "price": 5.84,
+      "status": "pending",
+      "note": "来自补货愿望单",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 47,
+      "code": "E12",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 5000,
+      "grams": 50,
+      "price": 5.84,
+      "status": "pending",
+      "note": "来自补货愿望单",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 46,
+      "code": "F11",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 6000,
+      "grams": 60,
+      "price": 7.01,
+      "status": "pending",
+      "note": "",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 45,
+      "code": "F9",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 8000,
+      "grams": 80,
+      "price": 9.34,
+      "status": "pending",
+      "note": "",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 44,
+      "code": "H6",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 8000,
+      "grams": 80,
+      "price": 9.34,
+      "status": "pending",
+      "note": "",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 43,
+      "code": "B11",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 10000,
+      "grams": 100,
+      "price": 11.68,
+      "status": "pending",
+      "note": "来自补货愿望单",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 42,
+      "code": "D26",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 12000,
+      "grams": 120,
+      "price": 14.02,
+      "status": "pending",
+      "note": "",
+      "date": "2026-06-08"
+    },
+    {
+      "id": 41,
+      "code": "H5",
+      "sid": 1,
+      "sellerName": "小红书Boss",
+      "platform": "小红书",
+      "beads": 15000,
+      "grams": 150,
+      "price": 17.52,
+      "status": "pending",
+      "note": "",
+      "date": "2026-06-08"
+    },
+    {
       "id": 40,
       "code": "F9",
       "sid": 1,
@@ -398,80 +619,8 @@
   ],
   "wishlist": [
     {
-      "id": 2,
-      "code": "G2",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-05-30"
-    },
-    {
-      "id": 4,
-      "code": "B11",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-05-31"
-    },
-    {
-      "id": 10,
-      "code": "H12",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-01"
-    },
-    {
-      "id": 11,
-      "code": "F4",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-01"
-    },
-    {
-      "id": 12,
-      "code": "F8",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-01"
-    },
-    {
-      "id": 13,
-      "code": "F7",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-01"
-    },
-    {
-      "id": 15,
-      "code": "E12",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-02"
-    },
-    {
       "id": 17,
       "code": "G12",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-02"
-    },
-    {
-      "id": 18,
-      "code": "D11",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-02"
-    },
-    {
-      "id": 19,
-      "code": "E14",
       "amount": 2000,
       "unit": "颗",
       "note": "",
@@ -479,10 +628,10 @@
     }
   ],
   "meta": {
-    "noid": 41,
+    "noid": 58,
     "nsid": 3,
     "nuid": 11,
     "nwid": 20
   },
-  "exportedAt": "2026-06-07T00:48:19.458Z"
+  "exportedAt": "2026-06-08T07:18:10.533Z"
 }
