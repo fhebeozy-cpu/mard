@@ -617,21 +617,12 @@
       "date": "2026-05-20"
     }
   ],
-  "wishlist": [
-    {
-      "id": 17,
-      "code": "G12",
-      "amount": 2000,
-      "unit": "颗",
-      "note": "",
-      "addedAt": "2026-06-02"
-    }
-  ],
+  "wishlist": [],
   "meta": {
     "noid": 58,
     "nsid": 3,
     "nuid": 11,
     "nwid": 20
   },
-  "exportedAt": "2026-06-08T07:18:10.533Z"
+  "exportedAt": "2026-06-08T07:27:40.707Z"
 }
