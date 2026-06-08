@@ -285,6 +285,66 @@ tr:hover td{background:var(--surface2)}
         </table>
       </div>
     </div>
+    <!-- Edit modal -->
+    <div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:999;align-items:center;justify-content:center">
+      <div style="background:var(--surface);border-radius:var(--r);padding:24px;width:92%;max-width:480px;box-shadow:0 8px 32px rgba(0,0,0,0.15);max-height:90vh;overflow-y:auto">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+          <div id="editDot" style="width:18px;height:18px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(0,0,0,0.1)"></div>
+          <span id="editTitle">编辑进货记录</span>
+        </div>
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="field ac-wrap">
+            <label>色号</label>
+            <input type="text" id="edit-code" autocomplete="off"
+              oninput="onEditAc()" onblur="setTimeout(closeEditAc,160)"
+              style="font-family:'DM Mono',monospace;font-weight:500"/>
+            <div class="ac-drop" id="editAcDrop" style="display:none"></div>
+          </div>
+          <div class="field">
+            <label>卖家</label>
+            <select id="edit-seller"></select>
+          </div>
+          <div class="field">
+            <label>数量</label>
+            <input type="number" id="edit-amount" min="0" step="0.1"/>
+          </div>
+          <div class="field">
+            <label>单位</label>
+            <select id="edit-unit">
+              <option value="packs">包</option>
+              <option value="grams">克 (g)</option>
+              <option value="beads">颗</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>单价 (¥)</label>
+            <input type="number" id="edit-price" min="0" step="0.01"/>
+          </div>
+          <div class="field">
+            <label>状态</label>
+            <select id="edit-status">
+              <option value="pending">待到货</option>
+              <option value="arrived">已到货</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>日期</label>
+            <input type="date" id="edit-date"/>
+          </div>
+          <div class="field">
+            <label>备注</label>
+            <input type="text" id="edit-note" placeholder="可选"/>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="saveEdit()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+            保存修改
+          </button>
+          <button class="btn btn-ghost" onclick="closeEditModal()">取消</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- INVENTORY -->
@@ -469,6 +529,35 @@ tr:hover td{background:var(--surface2)}
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
       </div>
+    </div>
+
+    <!-- Filter & sort bar -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+      <select id="wishSeriesFilter" onchange="renderWishlist()"
+        style="height:34px;font-size:13px;padding:0 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface);color:var(--ink);outline:none">
+        <option value="">全部系列</option>
+        <option value="A">A 系</option>
+        <option value="B">B 系</option>
+        <option value="C">C 系</option>
+        <option value="D">D 系</option>
+        <option value="E">E 系</option>
+        <option value="F">F 系</option>
+        <option value="G">G 系</option>
+        <option value="H">H 系</option>
+        <option value="M">M 系</option>
+        <option value="P">P 系</option>
+        <option value="Q">Q 系</option>
+        <option value="R">R 系</option>
+        <option value="T">T 系</option>
+        <option value="Y">Y 系</option>
+        <option value="ZG">ZG 系</option>
+      </select>
+      <select id="wishSortOrder" onchange="renderWishlist()"
+        style="height:34px;font-size:13px;padding:0 10px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface);color:var(--ink);outline:none">
+        <option value="added">按加入时间</option>
+        <option value="code">按色号排列</option>
+      </select>
+      <span id="wishFilterCount" style="font-size:12px;color:var(--ink3);margin-left:4px"></span>
     </div>
 
     <!-- Wishlist items -->
@@ -1042,9 +1131,33 @@ function renderWishlist(){
   if(!wrap)return;
   if(!wishlist.length){
     wrap.innerHTML='<div class="empty">愿望单是空的，添加你想补货的色号吧！</div>';
+    const fc=document.getElementById('wishFilterCount');
+    if(fc)fc.textContent='';
     return;
   }
-  wrap.innerHTML=wishlist.map(w=>{
+  const series=(document.getElementById('wishSeriesFilter')?.value||'').toUpperCase();
+  const sortBy=document.getElementById('wishSortOrder')?.value||'added';
+  let filtered=wishlist.filter(w=>{
+    if(!series)return true;
+    return w.code.startsWith(series) && (series==='ZG'||!/^[0-9]/.test(w.code.slice(series.length)));
+  });
+  if(sortBy==='code'){
+    filtered=[...filtered].sort((a,b)=>{
+      const serA=a.code.match(/^[A-Z]+/)?.[0]||'';
+      const serB=b.code.match(/^[A-Z]+/)?.[0]||'';
+      if(serA!==serB)return serA.localeCompare(serB);
+      const numA=parseInt(a.code.match(/\d+/)?.[0]||'0');
+      const numB=parseInt(b.code.match(/\d+/)?.[0]||'0');
+      return numA-numB;
+    });
+  }
+  const fc=document.getElementById('wishFilterCount');
+  if(fc)fc.textContent=series?`${filtered.length} / ${wishlist.length} 个色号`:`${wishlist.length} 个色号`;
+  if(!filtered.length){
+    wrap.innerHTML=`<div class="empty">${series} 系没有待补货的色号</div>`;
+    return;
+  }
+  wrap.innerHTML=filtered.map(w=>{
     const hex=CM[w.code]||'#ddd';
     const arrived=orders.filter(o=>o.status==='arrived'&&o.code===w.code).reduce((a,o)=>a+o.beads,0);
     const used=usage.filter(u=>u.code===w.code).reduce((a,u)=>a+u.beads,0);
@@ -1249,6 +1362,90 @@ function renderUsageList(){
   }).join('');
 }
 
+
+// ── 编辑进货记录 ──
+let editingId = null;
+let editSelCode = null;
+
+function openEditModal(id){
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  editingId=id;
+  // Set dot color
+  const hex=CM[o.code]||'#ddd';
+  document.getElementById('editDot').style.background=hex;
+  document.getElementById('editTitle').textContent='编辑：'+o.code;
+  // Fill fields
+  document.getElementById('edit-code').value=o.code;
+  editSelCode=o.code;
+  // Seller
+  const selEl=document.getElementById('edit-seller');
+  selEl.innerHTML=sellers.map(s=>`<option value="${s.id}"${s.id===o.sid?' selected':''}>${s.name}</option>`).join('');
+  // Reverse-calculate amount from beads
+  const sid=o.sid;
+  const bpp=getBpp(sid);
+  // Try to figure out original unit - check if beads is divisible by bpp (packs) or 100 (grams)
+  let amount=o.beads, unit='beads';
+  if(o.beads % bpp === 0){amount=o.beads/bpp;unit='packs';}
+  else if(o.beads % 100 === 0){amount=o.beads/100;unit='grams';}
+  document.getElementById('edit-amount').value=amount;
+  document.getElementById('edit-unit').value=unit;
+  document.getElementById('edit-price').value=o.price||'';
+  document.getElementById('edit-status').value=o.status;
+  document.getElementById('edit-date').value=o.date||'';
+  document.getElementById('edit-note').value=o.note||'';
+  document.getElementById('editModal').style.display='flex';
+}
+
+function closeEditModal(){
+  document.getElementById('editModal').style.display='none';
+  editingId=null;editSelCode=null;
+}
+
+function onEditAc(){
+  const q=document.getElementById('edit-code').value.trim().toUpperCase();
+  const drop=document.getElementById('editAcDrop');
+  editSelCode=null;
+  if(!q){drop.style.display='none';return;}
+  const m=COLORS.filter(([c])=>c.startsWith(q));
+  if(!m.length){drop.style.display='none';return;}
+  drop.innerHTML=m.slice(0,15).map(([c,h])=>`<div class="ac-item" onmousedown="pickEditCode('${c}')"><div class="ac-dot" style="background:${h}"></div><span class="ac-code">${c}</span><span class="ac-hex">${h}</span></div>`).join('');
+  drop.style.display='block';
+}
+function pickEditCode(c){
+  editSelCode=c;
+  document.getElementById('edit-code').value=c;
+  document.getElementById('editDot').style.background=CM[c]||'#ddd';
+  document.getElementById('editAcDrop').style.display='none';
+}
+function closeEditAc(){ document.getElementById('editAcDrop').style.display='none'; }
+
+function saveEdit(){
+  if(!editingId)return;
+  const o=orders.find(x=>x.id===editingId);if(!o)return;
+  const code=editSelCode||document.getElementById('edit-code').value.trim().toUpperCase();
+  if(!VALID.has(code)){alert('请输入有效的 Mard 色号');return;}
+  const sid=parseInt(document.getElementById('edit-seller').value);
+  const amount=parseFloat(document.getElementById('edit-amount').value)||0;
+  const unit=document.getElementById('edit-unit').value;
+  const beads=toBeads(amount,unit,sid);
+  const grams=toGrams(beads);
+  const price=parseFloat(document.getElementById('edit-price').value)||0;
+  const status=document.getElementById('edit-status').value;
+  const date=document.getElementById('edit-date').value;
+  const note=document.getElementById('edit-note').value.trim();
+  const seller=sellers.find(s=>s.id===sid);
+  // Update order in place
+  o.code=code;o.sid=sid;o.sellerName=seller?.name||'?';o.platform=seller?.platform||'';
+  o.beads=beads;o.grams=grams;o.price=price;o.status=status;o.date=date;o.note=note;
+  closeEditModal();
+  saveOrders();renderStats();renderOrders();renderInventory();
+}
+
+// Close modal on backdrop click
+document.getElementById('editModal').addEventListener('click',function(e){
+  if(e.target===this)closeEditModal();
+});
+
 function deleteOrder(id){
   if(!confirm('确定删除？'))return;
   orders=orders.filter(o=>o.id!==id);
@@ -1307,9 +1504,14 @@ function renderOrders(){
       <td>${badge}</td>
       <td class="mono" style="color:var(--ink3)">${o.date||''}</td>
       <td style="color:var(--ink3);max-width:110px;overflow:hidden;text-overflow:ellipsis">${o.note||''}</td>
-      <td><button class="icon-btn" onclick="deleteOrder(${o.id})" aria-label="删除">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6M14,11v6"/></svg>
-      </button></td>
+      <td style="white-space:nowrap">
+        <button class="icon-btn" onclick="openEditModal(${o.id})" aria-label="编辑" title="编辑">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="icon-btn" onclick="deleteOrder(${o.id})" aria-label="删除" title="删除">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6M14,11v6"/></svg>
+        </button>
+      </td>
     </tr>`;
   }).join('');
 }
