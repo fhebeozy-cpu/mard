@@ -205,11 +205,67 @@ tr:hover td{background:var(--surface2)}
   <div id="page-add" class="page active">
     <div class="page-hd">
       <div class="page-title">新增进货</div>
-      <div class="page-sub">输入色号按 Enter 逐条录入 · 数量/单价/单位可随时修改 · 色号不重复</div>
+      <div class="page-sub">逐条录入，或粘贴清单批量导入</div>
     </div>
     <div class="stat-row" id="statsRow"></div>
 
-    <div class="card">
+    <!-- 模式切换 -->
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      <button id="modeManual" class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="switchAddMode('manual')">逐条录入</button>
+      <button id="modePaste" class="btn btn-ghost" style="font-size:12px;padding:6px 14px" onclick="switchAddMode('paste')">粘贴清单</button>
+    </div>
+
+    <!-- 粘贴导入卡片 -->
+    <div id="pasteCard" class="card" style="display:none;margin-bottom:14px">
+      <div class="card-title">粘贴清单导入</div>
+      <p style="font-size:12px;color:var(--ink3);margin-bottom:12px;line-height:1.8">
+        支持格式：<code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-family:'DM Mono',monospace">H5 × 15</code> 或 <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-family:'DM Mono',monospace">H5 x 15</code> 或 <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-family:'DM Mono',monospace">H5 15</code>，每行一个
+      </p>
+      <div class="form-grid" style="margin-bottom:12px">
+        <div class="field"><label>卖家</label><select id="paste-seller"></select></div>
+        <div class="field">
+          <label>单位</label>
+          <select id="paste-unit">
+            <option value="packs">包</option>
+            <option value="grams">克 (g)</option>
+            <option value="beads">颗</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>总价 (¥)（可选，自动算单价）</label>
+          <input type="number" id="paste-total" min="0" step="0.01" placeholder="如 116.8"/>
+        </div>
+        <div class="field">
+          <label>单价 (¥)（若填了总价则忽略）</label>
+          <input type="number" id="paste-price" min="0" step="0.01" placeholder="如 1.168"/>
+        </div>
+        <div class="field">
+          <label>状态</label>
+          <select id="paste-status">
+            <option value="pending">待到货</option>
+            <option value="arrived">已到货</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>日期</label>
+          <input type="date" id="paste-date"/>
+        </div>
+      </div>
+      <textarea id="pasteText" rows="8"
+        placeholder="粘贴清单到这里，每行一个，例如：&#10;H5 × 15&#10;D26 × 12&#10;B11 × 10&#10;H6 × 8"
+        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:'DM Mono',monospace;background:var(--bg);color:var(--ink);outline:none;resize:vertical;line-height:1.6;margin-bottom:10px"
+        oninput="parsePastePreview()"></textarea>
+      <div id="pastePreview" style="margin-bottom:12px"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="commitPaste()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+          全部导入
+        </button>
+        <button class="btn btn-ghost" onclick="document.getElementById('pasteText').value='';parsePastePreview()">清除</button>
+      </div>
+    </div>
+
+    <div id="manualCard" class="card">
       <!-- 固定项：卖家、状态、日期、备注 -->
       <div class="card-title">进货设置（共用）</div>
       <div class="form-grid" style="margin-bottom:16px">
@@ -792,6 +848,8 @@ function load(){
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
   refreshSellers();renderStats();renderOrders();renderInventory();renderSellerList();
   calcBeads();addRow();
+  // sync paste seller
+  setTimeout(()=>{const ps=document.getElementById("paste-seller");if(ps)ps.innerHTML=sellers.map(s=>`<option value="${s.id}">${s.name}</option>`).join("")},200);
   document.getElementById('u-date').value=new Date().toISOString().slice(0,10);
   addURow();renderUsageStats();renderUsageList();
   renderWishlist();renderWishStats();
@@ -830,6 +888,105 @@ function calcBeads(){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{});
+
+
+// ── 粘贴清单导入 ──
+function switchAddMode(mode){
+  const manual=document.getElementById('manualCard');
+  const paste=document.getElementById('pasteCard');
+  const btnM=document.getElementById('modeManual');
+  const btnP=document.getElementById('modePaste');
+  if(mode==='paste'){
+    manual.style.display='none';paste.style.display='block';
+    btnM.className='btn btn-ghost';btnP.className='btn btn-primary';
+    // sync seller select
+    const ps=document.getElementById('paste-seller');
+    ps.innerHTML=sellers.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+    document.getElementById('paste-date').value=new Date().toISOString().slice(0,10);
+  } else {
+    manual.style.display='block';paste.style.display='none';
+    btnM.className='btn btn-primary';btnP.className='btn btn-ghost';
+  }
+}
+
+function parsePasteLines(){
+  const text=document.getElementById('pasteText').value;
+  const lines=text.split('\n').map(l=>l.trim()).filter(l=>l);
+  const results=[];
+  for(const line of lines){
+    // Match: optional bullet/dash/*, then CODE, optional separator (×,x,X,*,-,space), NUMBER
+    const m=line.match(/^[*\\-•]?\s*([A-Za-z]{1,2}\d+)\s*[×xX\*]?\s*(\d+(?:\.\d+)?)/);
+    if(m){
+      const code=m[1].toUpperCase();
+      const qty=parseFloat(m[2]);
+      if(VALID.has(code)&&qty>0) results.push({code,qty,valid:true});
+      else results.push({code,qty,valid:false});
+    }
+  }
+  return results;
+}
+
+function parsePastePreview(){
+  const items=parsePasteLines();
+  const preview=document.getElementById('pastePreview');
+  if(!items.length){preview.innerHTML='';return;}
+  const totalQty=items.filter(i=>i.valid).reduce((a,i)=>a+i.qty,0);
+  const totalPrice=parseFloat(document.getElementById('paste-total').value)||0;
+  const unitPrice=totalPrice>0?(totalPrice/totalQty).toFixed(4):
+    (parseFloat(document.getElementById('paste-price').value)||0).toFixed(4);
+  const invalid=items.filter(i=>!i.valid);
+  preview.innerHTML=`
+    <div style="background:var(--surface2);border-radius:var(--rs);padding:10px 14px;font-size:12px">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px">
+        <span>识别到 <strong>${items.filter(i=>i.valid).length}</strong> 个色号</span>
+        <span>总数量 <strong>${totalQty}</strong> 包</span>
+        ${totalPrice>0?`<span>每包 <strong>¥${parseFloat(unitPrice).toFixed(3)}</strong></span>`:''}
+        ${invalid.length?`<span style="color:var(--red)">⚠ ${invalid.length} 个无效色号</span>`:''}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${items.map(i=>{
+          const hex=CM[i.code]||'#ddd';
+          return `<div style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 5px;border-radius:20px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;
+            ${i.valid?'background:var(--green-bg);color:var(--green)':'background:var(--red-bg);color:var(--red)'}">
+            <div style="width:10px;height:10px;border-radius:50%;background:${hex};flex-shrink:0"></div>
+            ${i.code} ×${i.qty}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function commitPaste(){
+  const items=parsePasteLines().filter(i=>i.valid);
+  if(!items.length){alert('没有识别到有效色号，请检查格式');return;}
+  const sid=parseInt(document.getElementById('paste-seller').value);
+  const unit=document.getElementById('paste-unit').value;
+  const status=document.getElementById('paste-status').value;
+  const date=document.getElementById('paste-date').value;
+  const totalPrice=parseFloat(document.getElementById('paste-total').value)||0;
+  const manualPrice=parseFloat(document.getElementById('paste-price').value)||0;
+  const totalQty=items.reduce((a,i)=>a+i.qty,0);
+  const unitPrice=totalPrice>0?totalPrice/totalQty:manualPrice;
+  const seller=sellers.find(s=>s.id===sid);
+  const wishCodes=new Set(wishlist.map(w=>w.code));
+  items.forEach(item=>{
+    const beads=toBeads(item.qty,unit,sid);
+    const grams=toGrams(beads);
+    const note=wishCodes.has(item.code)?'来自补货愿望单':'';
+    orders.unshift({id:noid++,code:item.code,sid,sellerName:seller?.name||'?',platform:seller?.platform||'',
+      beads,grams,price:parseFloat((unitPrice*item.qty).toFixed(2)),status,note,date});
+  });
+  saveOrders();renderStats();renderOrders();renderInventory();
+  // Auto-remove from wishlist if exists
+  const removedFromWish=removeFromWishIfExists(items.map(i=>i.code));
+  document.getElementById('pasteText').value='';
+  document.getElementById('pastePreview').innerHTML='';
+  document.getElementById('paste-total').value='';
+  document.getElementById('paste-price').value='';
+  let msg='✓ 已导入 '+items.length+' 条记录';
+  if(removedFromWish.length)msg+='\n已从愿望单移除：'+removedFromWish.join('、');
+  alert(msg);
+}
 
 // ── 行录入系统 ──
 let rows=[]; // [{id,code,amount,unit,price}]
@@ -984,15 +1141,21 @@ function commitBatch(){
   const note=document.getElementById('f-note').value.trim();
   const date=document.getElementById('f-date').value;
   const seller=sellers.find(s=>s.id===sid);
+  const wishCodesSet=new Set(wishlist.map(w=>w.code));
   valid.forEach(r=>{
     const beads=toBeads(r.amount,r.unit,sid);
     const grams=toGrams(beads);
-    orders.unshift({id:noid++,code:r.code,sid,sellerName:seller?.name||'?',platform:seller?.platform||'',beads,grams,price:r.price,status,note,date});
+    const rowNote=wishCodesSet.has(r.code)?('来自补货愿望单'+(note?'·'+note:'')):(note||'');
+    orders.unshift({id:noid++,code:r.code,sid,sellerName:seller?.name||'?',platform:seller?.platform||'',beads,grams,price:r.price,status,note:rowNote,date});
   });
   const saved=valid.length;
   rows=[];addRow();
   saveOrders();renderStats();renderOrders();renderInventory();
-  alert(`✓ 已保存 ${saved} 条记录`);
+  // Auto-remove from wishlist if exists
+  const removedW=removeFromWishIfExists(valid.map(r=>r.code));
+  let msg=`✓ 已保存 ${saved} 条记录`;
+  if(removedW.length)msg+='\n已从愿望单移除：'+removedW.join('、');
+  alert(msg);
 }
 
 function addOrder(){commitBatch();}
@@ -1036,6 +1199,21 @@ function addWish(){
   saveWishlist();renderWishlist();renderWishStats();
   // refocus code input
   setTimeout(()=>document.getElementById('w-code').focus(),30);
+}
+
+
+function removeFromWishIfExists(codes){
+  const before=wishlist.length;
+  const removed=[];
+  codes.forEach(code=>{
+    const idx=wishlist.findIndex(w=>w.code===code);
+    if(idx>=0){removed.push(code);wishlist.splice(idx,1);}
+  });
+  if(removed.length){
+    saveWishlist();renderWishlist();renderWishStats();
+    return removed;
+  }
+  return [];
 }
 
 function removeWish(id){
