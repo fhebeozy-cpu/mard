@@ -639,13 +639,21 @@
       "unit": "颗",
       "note": "",
       "addedAt": "2026-06-10"
+    },
+    {
+      "id": 23,
+      "code": "D11",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-10"
     }
   ],
   "meta": {
     "noid": 58,
     "nsid": 3,
     "nuid": 12,
-    "nwid": 23
+    "nwid": 24
   },
-  "exportedAt": "2026-06-10T13:43:11.402Z"
+  "exportedAt": "2026-06-10T13:43:21.535Z"
 }
