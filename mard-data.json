@@ -623,12 +623,21 @@
       "date": "2026-05-20"
     }
   ],
-  "wishlist": [],
+  "wishlist": [
+    {
+      "id": 20,
+      "code": "G21",
+      "amount": 2000,
+      "unit": "颗",
+      "note": "",
+      "addedAt": "2026-06-10"
+    }
+  ],
   "meta": {
     "noid": 58,
     "nsid": 3,
     "nuid": 12,
-    "nwid": 20
+    "nwid": 21
   },
-  "exportedAt": "2026-06-10T12:17:23.457Z"
+  "exportedAt": "2026-06-10T13:41:48.513Z"
 }
